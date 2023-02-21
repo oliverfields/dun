@@ -1,2 +1,2 @@
 # twwd
-Meeting notes and todo tasks CLI
+Lightweight meeting notes and todo tasks CLI
