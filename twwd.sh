@@ -24,8 +24,8 @@ _twwd_select_print_task() {
 
   IFS=':' read -ra tl <<<"$task_line"
 
-  printf "\e[0;35m%s\e[0m%s" "$task_number" "$padding" 
-  printf " %s " "${tl_text}" | sed "s/\n// ; s/#[^\ ]*/${ESC}[0;34m&${ESC}[0m/g ; s/[A-Z0-9\-_]\{4,\}/${ESC}[36m&${ESC}[0m/g"
+  printf "\e[0;35m%s\e[0m%s " "$task_number" "$padding" 
+  printf "%s " "${tl_text}" | sed "s/^ *// ; s/^- *// ; s/\n// ; s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g"
   printf "\e[32m%s\e[0m\n" "$tl_file"
 }
 
@@ -75,7 +75,7 @@ twwd() {
       # If called j tasks <regexp>, then search for that
       elif [ "$2" = "all" ]; then
         # Default regexp finds all lines containing at least 4 consecutive uppercase letter
-        regexp='[A-Z0-9\-_]\{4,\}'
+        regexp='TODO\|WAIT\|WONT\|DONE'
       else
         regexp="$2"
       fi
