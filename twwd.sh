@@ -1,66 +1,52 @@
 #!/bin/bash
 
-_twwd_select_print_task() {
-  task_number=$1
-  task_line=$2
-  max_pad_length=$3
+_twwd_edit_lines() {
+  # $1 argument is a command that when evaluated must produce output in format <filename>:<line number>:<line text>
 
   # https://misc.flogisoft.com/bash/tip_colors_and_formatting
   # Oneliner to list colors:
   # for x in {0..8}; do for i in {30..37}; do for a in {40..47}; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo ""
+
+  terminal_width=$(tput cols)
+  tabs 5 # set tabs width
+  let line_column=$terminal_width-16
   ESC=$(printf '\033')
+  title="$1"
+  cmd="$2"
 
-  tl_file=$(echo $task_line | cut -d ':' -f1)
-  tl_text=$(echo $task_line | cut -d ':' -f3-)
-
-  padding=""
-  for (( x=${#task_number};x<${#max_pad_length}; x++ )) ; do
-    padding=" $padding"
-  done
-
-  IFS=':' read -ra tl <<<"$task_line"
-
-  printf "\e[0;35m%s\e[0m%s " "$task_number" "$padding" 
-  printf "%s " "${tl_text}" | sed "s/^ *// ; s/^- *// ; s/\n// ; s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g"
-  printf "\e[32m%s\e[0m\n" "$tl_file"
-
-  printf "\e[0;35m%s\e[0m%s " "$task_number" "$padding" 
-  printf "%s " "${tl_text}" | sed "s/^ *// ; s/^- *// ; s/\n// ; s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g"
-  printf "\e[32m%s\e[0m\n" "$tl_file"
-}
-
-
-_twwd_edit_lines() {
-  # $1 argument is a command that when evaluated must produce output in format <filename>:<line number>:<line text>
-
-  #column -s '§' -t
-  #echo $sum_options options
   while true; do
-    readarray lines < <(eval $1)
+    readarray lines < <(eval $cmd)
+
+    if [ ${#lines[@]} -eq 0 ]; then
+      echo "No tasks found:("
+      return 1
+    fi
+
+    clear
+
+    printf "\e[1m%s\e[0m\n" "$title"
+
     for ((i=0;i<${#lines[@]};i++)); do
       IFS=':' read -r -a line <<< "${lines[$i]}"
       filename="${line[0]}"
       line_number="${line[1]}"
       line_text="$(echo "${line[2]}" | sed 's/^ *// ; s/^-// ; s/^ *//')"
 
-      printf "%s§%s\n" "$i" "$line_text"
-      printf "§%s\n" "$filename"
-    done | column --separator '§' --table --table-noheadings --table-columns C1,C2 --table-wrap C2
+      printf "\n%s\t%s\n" "$i" "$line_text"
+      printf "\tfile://%s\n" "$filename"
 
-    if [ $i -eq 0 ]; then
-      echo "No tasks found:("
-      break
-    fi
+    done | perl -lpe "s/(.{$line_column,}?)\s/\$1\n\t/g" \
+         | sed "s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g ; s/^[0-9]*/${ESC}[0;35m&${ESC}[0m/ ; s#file://\(.*\)#${ESC}[32m\1${ESC}[0m#"
 
-    echo ""
-    printf "Type \e[0;35m0-%s\e[0m to select, anything else exits\n" "$i"
+    let y=${#lines[@]}-1
+    printf "\nType \e[0;35m0-%s\e[0m to select, anything else exits\n" "$y"
     read selection < /dev/tty
 
     if [ "$selection" -le $i ] 2>/dev/null ; then
       IFS=':' read -ra selected_file <<< ${lines[$selection]}
       vim +${selected_file[1]} "${selected_file[0]}" --not-a-term
     else
-      break
+      return 0
     fi
   done
 }
@@ -70,7 +56,7 @@ twwd() {
 
   if [[ ! -v TWWD_DIR ]]; then
     echo 'TWWD_DIR environment variable not set, quitting'
-    return
+    return 1
   fi
 
   if [ $# -eq 0 ]; then
@@ -112,7 +98,8 @@ twwd() {
         max_count=9
       fi
 
-      _twwd_edit_lines "ls -1t | head -$max_count | sed 's/\$/:0/'"
+       #TODO add timestampt to text
+      _twwd_edit_lines "Recently modified" "ls -1t | head -$max_count | sed 's/\$/:0/'"
 
       ;;
     list)
@@ -123,13 +110,16 @@ twwd() {
 
       if [ $# -eq 1 ]; then
         awk_filter=' && /TODO/' # The ' && ' is to match with the else result
+        filters=' +TODO'
       else
         shift
 
         awk_filter=''
+        filters=''
 
         ## Create awk command to 
         while (( $# )); do
+          filters="$filters $1"
           case ${1:0:1} in
             +)
               awk_filter="$awk_filter && /${1:1}/"
@@ -148,7 +138,7 @@ twwd() {
 
       awk_filter="${awk_filter:4}" # Remove first '&& '
 
-      _twwd_edit_lines "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' *"
+      _twwd_edit_lines "Tasks, filters:$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' *"
       ;;
     tags)
       # Select files containing tags and matching a status
