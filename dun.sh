@@ -5,7 +5,7 @@ dun() {
 
   # Directory for dun, defaults to ~/dun or can be specified by DUN_DIR environment variable
   if [[ ! -v DUN_DIR ]]; then
-    DUN_DIR="$HOME/dun"
+    DUN_DIR="~/dun"
   fi
 
   # Offer to create DUN_DIR if it does not exist
@@ -30,6 +30,7 @@ dun() {
       echo "dun [new|list|last|help]"
       ;;
     new)
+      # Create new file in DUN_DIR
       num=0
 
       if [ $# -eq 2 ]; then
@@ -46,20 +47,21 @@ dun() {
 
       new_file="${new_file}-$num"
 
-      vim "$new_file"
+      vim -c 'set syntax=dun' "$new_file"
 
       ;;
     last)
-      #Select to open one of X last edited files
+      #Select to open one of X most recently modified files
 
       if [ "$2" != "" ]; then
         max_count=$2
       else
-        max_count=9
+        max_count=10
       fi
 
-       #TODO add timestampt to text
-      _dun_edit_lines "Recently modified" "ls -1t | head -$max_count | sed 's/\$/:0/'"
+      # find just files in DUN_DIR and get their epoch and date stamp, sort (because epoch is first)
+      # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
+      _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$DUN_DIR' -maxdepth 1 -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$DUN_DIR/##'"
 
       ;;
     list)
@@ -138,6 +140,7 @@ _dun_edit_lines() {
       printf "\n%s\t%s\n" "$i" "$line_text"
       printf "\tfile://%s" "$filename"
 
+         # The following perl makes text into column, and sed colorizes output
     done | perl -lpe "s/(.{$line_column,}?)\s/\$1\n\t/g" \
          | sed "s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g ; s/^[0-9]*/${ESC}[0;35m&${ESC}[0m/ ; s#file://\(.*\)#${ESC}[32m\1${ESC}[0m#"
 
@@ -145,9 +148,10 @@ _dun_edit_lines() {
     printf "\nType \e[0;35m0-%s\e[0m to select, anything else exits\n" "$y"
     read selection < /dev/tty
 
+    # Open selected file at given location in vim (for now..)
     if [ "$selection" -le ${#lines[@]} ] 2>/dev/null ; then
       IFS=':' read -ra selected_file <<< ${lines[$selection]}
-      vim +${selected_file[1]} "${selected_file[0]}" --not-a-term
+      vim -c 'set syntax=dun' +${selected_file[1]} "${selected_file[0]}" --not-a-term
     else
       return 0
     fi
@@ -156,7 +160,8 @@ _dun_edit_lines() {
 
 
 _dun() {
-  # Bash completion, add 'complete -F _dun dun' to .bashrc to enable
+  # Bash completion
+  # Add 'complete -F _dun dun' to .bashrc to enable
   # https://devmanual.gentoo.org/tasks-reference/completion/index.html
   # https://www.gnu.org/software/gnuastro/manual/html_node/Bash-TAB-completion-tutorial.html
 
