@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Freeform task tracking for plain text notes
 
 dun() {
 
@@ -27,7 +28,32 @@ dun() {
 
   case $1 in
     help)
-      echo "dun [new|list|last|help]"
+    
+      echo -e '
+Task tracking from freeform notes. Tasks are single lines containing a status and optionally one or more tags. Notes are plain text files.
+
+\e[1mdun\e[0m [new|list|recent|help]\e[0m
+
+    \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
+        List tasks and filter them, if no filter specified filter by TODO. Filter strings are prefixed by either + or -, + will match if the string is present, whilst - means the string must be absent.
+
+        \e[1mExample:\e[0m
+            dun list +#ProjectA -DONE
+                List tasks that are not DONE and are tagged #ProjectA
+
+    \e[1mnew\e[0m [NAME STRING]
+        Create new note text file in DUN_DIR. If Name is specified the file name will be  yyyy-mm-dd-[name]-[increment], else just yyyy-mm-dd-[increment].
+
+        \e[1mExample:\e[0m
+            dun new retrospective
+                File name will be yyyy-mm-dd-retrospective-0 (if the file already exists the -0 will increment until the file name is unique)
+
+    \e[1mrecent\e[0m [NUMBER]
+        List the first Number of recently modified note files. Number defaults to 9.
+
+    \e[1mhelp\e[0m
+        This text.
+' | fmt
       ;;
     new)
       # Create new file in DUN_DIR
@@ -50,8 +76,8 @@ dun() {
       vim -c 'set syntax=dun' "$new_file"
 
       ;;
-    last)
-      #Select to open one of X most recently modified files
+    recent)
+      #Select to open one of X recently modified files from DUN_DIR
 
       if [ "$2" != "" ]; then
         max_count=$2
@@ -66,7 +92,6 @@ dun() {
       ;;
     list)
       # List tasks filtered by +<word> -<word>
-      # Use tab completion for specifying either +#tags or -#tags and for +/-STATUSes 
 
       if [ $# -eq 1 ]; then
         awk_filter=' && /TODO/' # The ' && ' is to match with the else result
@@ -77,7 +102,7 @@ dun() {
         awk_filter=''
         filters=''
 
-        ## Create awk command to 
+        ## Create awk command to filter lines
         while (( $# )); do
           filters="$filters $1"
           case ${1:0:1} in
@@ -107,8 +132,10 @@ dun() {
 
 
 _dun_edit_lines() {
-  # $1 argument is a command that when evaluated must produce output in format <filename>:<line number>:<line text>
+  # Accepts a title and command that will list tasks (lines in note files) and allows user to select a line and open it in editor repeatedly
+  # $1 argument is the command that when evaluated must produce output in format <filename>:<line number>:<line text>
 
+  # To make this pretty there is a lot of font coloring going on
   # https://misc.flogisoft.com/bash/tip_colors_and_formatting
   # Oneliner to list colors:
   # for x in {0..8}; do for i in {30..37}; do for a in {40..47}; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo ""
@@ -119,6 +146,7 @@ _dun_edit_lines() {
   title="$1"
   cmd="$2"
 
+  # The loop evaluates the command argument and allows user to select a line to edit
   while true; do
     readarray lines < <(eval $cmd)
 
@@ -140,7 +168,7 @@ _dun_edit_lines() {
       printf "\n%s\t%s\n" "$i" "$line_text"
       printf "\tfile://%s" "$filename"
 
-         # The following perl makes text into column, and sed colorizes output
+         # perl makes text into column, and sed colorizes output
     done | perl -lpe "s/(.{$line_column,}?)\s/\$1\n\t/g" \
          | sed "s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g ; s/^[0-9]*/${ESC}[0;35m&${ESC}[0m/ ; s#file://\(.*\)#${ESC}[32m\1${ESC}[0m#"
 
@@ -151,6 +179,8 @@ _dun_edit_lines() {
     # Open selected file at given location in vim (for now..)
     if [ "$selection" -le ${#lines[@]} ] 2>/dev/null ; then
       IFS=':' read -ra selected_file <<< ${lines[$selection]}
+
+      # Well, if you would like to use another editor, this is the line to change:)
       vim -c 'set syntax=dun' +${selected_file[1]} "${selected_file[0]}" --not-a-term
     else
       return 0
@@ -170,7 +200,7 @@ _dun() {
   word_before_current_word=$3
   COMPREPLY=()
 
-  options="new list last help"
+  options="new list recent help"
 
   # tags and statuses start either with a - or +
   statuses=("TODO" "WAIT" "WONT" "DONE")
