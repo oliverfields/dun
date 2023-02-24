@@ -213,7 +213,7 @@ s/$todos/${ESC}${STATUS_TODO_STYLE} & ${NO_STYLE}/g \
 # Done statuses
 ; s/$dones/${ESC}${STATUS_DONE_STYLE} & ${NO_STYLE}/g \
 # Tags
-; s/#[^\ ]*/${ESC}${TAG_STYLE} & ${NO_STYLE}/g \
+; s/#[^\ ]+/${ESC}${TAG_STYLE} & ${NO_STYLE}/g \
 # Select numbers
 ; s/^([0-9]*)/${ESC}${HIGHLIGHT_STYLE}&${NO_STYLE}/ \
 # file name

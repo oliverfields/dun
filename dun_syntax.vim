@@ -10,11 +10,11 @@ syntax keyword dunTODO TODO
 syntax keyword dunWAIT WAIT
 syntax keyword dunWONT WONT
 syntax keyword dunDONE DONE
-syntax match dunTag "\v#\a{1,}"
+syntax match dunTag "\v#[^ ]+"
 
 highlight link dunTODO DiffDelete
 highlight link dunWAIT WildMenu
-highlight link dunWONT StatusLineTermN
+highlight link dunWONT StatusLineTermNC
 highlight link dunDONE StatusLineTermNC
 highlight link dunTag DiffAdd
 
