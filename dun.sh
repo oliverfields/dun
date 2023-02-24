@@ -2,6 +2,7 @@
 
 # Freeform task tracking for plain text notes
 
+
 dun() {
   # Settings defaults
   NOTES_DIR=~/dun
@@ -20,6 +21,7 @@ dun() {
     source $conf_file
   fi
 
+  # Create notes dir if it doesn't exist
   if [ -d "$NOTES_DIR" ]; then
     cd "$NOTES_DIR"
   else
@@ -40,9 +42,9 @@ dun() {
 
   case $1 in
     help)
-    
+
       echo -e '
-Task tracking from freeform notes. Tasks are single lines containing a status and optionally one or more tags. Notes are plain text files.
+Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
 \e[1mdun\e[0m [new|list|recent|help]\e[0m
 
@@ -67,6 +69,7 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
         This text.
 ' | fmt
       ;;
+
     new)
       # Create new file in NOTES_DIR
       num=0
@@ -88,6 +91,7 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
       vim -c 'set syntax=dun' "$new_file"
 
       ;;
+
     recent)
       #Select to open one of X recently modified files from NOTES_DIR
 
@@ -102,6 +106,7 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
       _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
 
       ;;
+
     list)
       # List tasks filtered by +<word> -<word>
 
@@ -167,6 +172,7 @@ _dun_edit_lines() {
   tabs 5 # set tabs width
   let line_column=$terminal_width-16
   ESC=$(printf '\033')
+  NO_STYLE=$(printf '\033[0m')
   title="$1"
   cmd="$2"
 
@@ -183,9 +189,9 @@ _dun_edit_lines() {
     blocks="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
     dones="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
 
-    #clear
+    clear
 
-    printf "\e[1m%s\e[0m\n" "$title"
+    printf "\e[1m%s${NO_STYLE}\n" "$title"
 
     for ((i=0;i<${#lines[@]};i++)); do
       IFS=':' read -r -a line <<< "${lines[$i]}"
@@ -201,28 +207,28 @@ _dun_edit_lines() {
 # Remove preceeding spaces and dashes
 s/^\ *// ; s/^-// ; s/^\ *// \
 # Todo statuses
-s/$todos/${ESC}${STATUS_TODO_STYLE} & ${ESC}[0m/g \
+s/$todos/${ESC}${STATUS_TODO_STYLE} & ${NO_STYLE}/g \
 # Block statuses
-; s/$blocks/${ESC}${STATUS_BLOCK_STYLE} & ${ESC}[0m/g \
+; s/$blocks/${ESC}${STATUS_BLOCK_STYLE} & ${NO_STYLE}/g \
 # Done statuses
-; s/$dones/${ESC}${STATUS_DONE_STYLE} & ${ESC}[0m/g \
+; s/$dones/${ESC}${STATUS_DONE_STYLE} & ${NO_STYLE}/g \
 # Tags
-; s/#[^\ ]*/${ESC}${TAG_STYLE} & ${ESC}[0m/g \
+; s/#[^\ ]*/${ESC}${TAG_STYLE} & ${NO_STYLE}/g \
 # Select numbers
-; s/^([0-9]*)/${ESC}${HIGHLIGHT_STYLE}&${ESC}[0m/ \
+; s/^([0-9]*)/${ESC}${HIGHLIGHT_STYLE}&${NO_STYLE}/ \
 # file name
-; s_file://(.*)_${ESC}${FILENAME_STYLE}&${ESC}[0m_g \
+; s_file://(.*)_${ESC}${FILENAME_STYLE}\\1${NO_STYLE}_g \
 "
 
+    # Ask user to select line
     let y=${#lines[@]}-1
-    printf "\nType \e${HIGHLIGHT_STYLE}0-%s\e[0m to select, anything else exits\n" "$y"
+    printf "\nType \e${HIGHLIGHT_STYLE}0-%s${NO_STYLE} to select, anything else exits\n" "$y"
     read selection < /dev/tty
 
-    # Open selected file at given location in vim (for now..)
+    # Open selected file at given location in editor
     if [ "$selection" -le ${#lines[@]} ] 2>/dev/null ; then
       IFS=':' read -ra selected_file <<< ${lines[$selection]}
 
-      # Well, if you would like to use another editor, this is the line to change:)
       vim -c 'set syntax=dun' +${selected_file[1]} "${selected_file[0]}" --not-a-term
     else
       return 0

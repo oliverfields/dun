@@ -1,5 +1,6 @@
 " Language: dun
 " Maintainer: Oliver Fields
+" If statuses are changed, this file must be updated too
 
 if exists("b:current_syntax")
   finish
@@ -12,8 +13,8 @@ syntax keyword dunDONE DONE
 syntax match dunTag "\v#\a{1,}"
 
 highlight link dunTODO DiffDelete
-highlight link dunWAIT SpellBad
-highlight link dunWONT CursorColumn
+highlight link dunWAIT WildMenu
+highlight link dunWONT StatusLineTermN
 highlight link dunDONE StatusLineTermNC
 highlight link dunTag DiffAdd
 
