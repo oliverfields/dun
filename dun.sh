@@ -3,26 +3,38 @@
 # Freeform task tracking for plain text notes
 
 dun() {
+  # Settings defaults
+  NOTES_DIR=~/dun
+  STATUSES_TODO=('TODO')
+  STATUSES_BLOCK=('WAIT')
+  STATUSES_DONE=('WONT' 'DONE')
+  STATUSES_TODO_STYLE='[1;37;46m'
+  STATUSES_BLOCK_STYLE='[1;37;43m'
+  STATUSES_DONE_STYLE='[1;37;46m'
+  HIGHLIGHT_STYLE='[0;35m'
+  FILENAME_STYLE='[0;32m'
 
-  # Directory for dun, defaults to ~/dun or can be specified by DUN_DIR environment variable
-  if [[ ! -v DUN_DIR ]]; then
-    DUN_DIR="~/dun"
+  # Load config file
+  conf_file=~/.config/dun.conf
+  if [ -f $conf_file ]; then
+    source $conf_file
   fi
 
-  # Offer to create DUN_DIR if it does not exist
-  if [ -d "$DUN_DIR" ]; then
-    cd "$DUN_DIR"
+  if [ -d "$NOTES_DIR" ]; then
+    cd "$NOTES_DIR"
   else
-    echo "$DUN_DIR does not exist (set environment variable DUN_DIR to specify another location). Create it? [y|n]"
+    echo "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location). Create it? [y|n]"
     read selection
     if [ "$selection" = "y" ]; then
-      mkdir -p "$DUN_DIR"
+      mkdir -p "$NOTES_DIR"
+    else
+      return 0
     fi 
   fi
 
-  # Jump to DUN_DIR if no arguments passed
+  # Jump to NOTES_DIR if no arguments passed
   if [ $# -eq 0 ]; then
-    command cd "$DUN_DIR"
+    command cd "$NOTES_DIR"
     return
   fi
 
@@ -35,14 +47,14 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
 \e[1mdun\e[0m [new|list|recent|help]\e[0m
 
     \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
-        List tasks and filter them, if no filter specified filter by TODO. Filter strings are prefixed by either + or -, + will match if the string is present, whilst - means the string must be absent.
+        List tasks and filter them, if no filter specified filter by TODO status (or default status defined in STATUSES_TODO setting in dun.conf). Filter strings are prefixed by either + or -, + will match if the string is present, whilst - means the string must be absent.
 
         \e[1mExample:\e[0m
             dun list +#ProjectA -DONE
                 List tasks that are not DONE and are tagged #ProjectA
 
     \e[1mnew\e[0m [NAME STRING]
-        Create new note text file in DUN_DIR. If Name is specified the file name will be  yyyy-mm-dd-[name]-[increment], else just yyyy-mm-dd-[increment].
+        Create new note text file in NOTES_DIR. If Name is specified the file name will be  yyyy-mm-dd-[name]-[increment], else just yyyy-mm-dd-[increment].
 
         \e[1mExample:\e[0m
             dun new retrospective
@@ -56,7 +68,7 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
 ' | fmt
       ;;
     new)
-      # Create new file in DUN_DIR
+      # Create new file in NOTES_DIR
       num=0
 
       if [ $# -eq 2 ]; then
@@ -65,7 +77,7 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
         note_name=''
       fi
 
-      new_file="$DUN_DIR/$(date +%Y%m%d)$note_name"
+      new_file="$NOTES_DIR/$(date +%Y%m%d)$note_name"
 
       while [ -e "${new_file}-$num" ]; do
         num=$((num +1))
@@ -77,7 +89,7 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
 
       ;;
     recent)
-      #Select to open one of X recently modified files from DUN_DIR
+      #Select to open one of X recently modified files from NOTES_DIR
 
       if [ "$2" != "" ]; then
         max_count=$2
@@ -85,17 +97,18 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
         max_count=10
       fi
 
-      # find just files in DUN_DIR and get their epoch and date stamp, sort (because epoch is first)
+      # find just files in NOTES_DIR and get their epoch and date stamp, sort (because epoch is first)
       # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
-      _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$DUN_DIR' -maxdepth 1 -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$DUN_DIR/##'"
+      _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
 
       ;;
     list)
       # List tasks filtered by +<word> -<word>
 
       if [ $# -eq 1 ]; then
-        awk_filter=' && /TODO/' # The ' && ' is to match with the else result
-        filters=' +TODO'
+        default_status=${STATUSES_TODO[0]}
+        awk_filter=" && /$default_status/" # The ' && ' is to match with the else result
+        filters=" +$default_status"
       else
         shift
 
@@ -131,6 +144,17 @@ Task tracking from freeform notes. Tasks are single lines containing a status an
 }
 
 
+_dun_regexp_statuses() {
+  # Helper function to make regexp for matching statuses
+  statuses=("$@")
+  regexp=''
+  for s in "${statuses[@]}"; do
+    regexp="$regexp|$s"
+  done
+  echo "(${regexp:1})"
+}
+
+
 _dun_edit_lines() {
   # Accepts a title and command that will list tasks (lines in note files) and allows user to select a line and open it in editor repeatedly
   # $1 argument is the command that when evaluated must produce output in format <filename>:<line number>:<line text>
@@ -155,7 +179,11 @@ _dun_edit_lines() {
       return 1
     fi
 
-    clear
+    todos="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
+    blocks="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
+    dones="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
+
+    #clear
 
     printf "\e[1m%s\e[0m\n" "$title"
 
@@ -169,11 +197,25 @@ _dun_edit_lines() {
       printf "\tfile://%s" "$filename"
 
          # perl makes text into column, and sed colorizes output
-    done | perl -lpe "s/(.{$line_column,}?)\s/\$1\n\t/g" \
-         | sed "s/#[^\ ]*/${ESC}[1;37;44m&${ESC}[0m/g ; s/TODO/${ESC}[1;37;46m&${ESC}[0m/g ; s/WAIT/${ESC}[1;37;43m&${ESC}[0m/g; s/WONT/${ESC}[1;36;47m&${ESC}[0m/g ; s/DONE/${ESC}[1;37;42m&${ESC}[0m/g ; s/^[0-9]*/${ESC}[0;35m&${ESC}[0m/ ; s#file://\(.*\)#${ESC}[32m\1${ESC}[0m#"
+    done | perl -lpe "s/(.{$line_column,}?)\s/\$1\n\t/g" | sed -r "\
+# Remove preceeding spaces and dashes
+s/^\ *// ; s/^-// ; s/^\ *// \
+# Todo statuses
+s/$todos/${ESC}${STATUS_TODO_STYLE} & ${ESC}[0m/g \
+# Block statuses
+; s/$blocks/${ESC}${STATUS_BLOCK_STYLE} & ${ESC}[0m/g \
+# Done statuses
+; s/$dones/${ESC}${STATUS_DONE_STYLE} & ${ESC}[0m/g \
+# Tags
+; s/#[^\ ]*/${ESC}${TAG_STYLE} & ${ESC}[0m/g \
+# Select numbers
+; s/^([0-9]*)/${ESC}${HIGHLIGHT_STYLE}&${ESC}[0m/ \
+# file name
+; s_file://(.*)_${ESC}${FILENAME_STYLE}&${ESC}[0m_g \
+"
 
     let y=${#lines[@]}-1
-    printf "\nType \e[0;35m0-%s\e[0m to select, anything else exits\n" "$y"
+    printf "\nType \e${HIGHLIGHT_STYLE}0-%s\e[0m to select, anything else exits\n" "$y"
     read selection < /dev/tty
 
     # Open selected file at given location in vim (for now..)
@@ -203,8 +245,8 @@ _dun() {
   options="new list recent help"
 
   # tags and statuses start either with a - or +
-  statuses=("TODO" "WAIT" "WONT" "DONE")
-  readarray tags < <(cd "$DUN_DIR" && grep --directories=skip --no-filename --only-matching '#[[:alnum:]]\{1,\}' * | sort | uniq)
+  statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
+  readarray tags < <(cd "$NOTES_DIR" && grep --directories=skip --no-filename --only-matching '#[[:alnum:]]\{1,\}' * | sort | uniq)
   filters=("${statuses[@]}" "${tags[@]}")
   for ((i=0;i<${#filters[@]};i++)); do
     options="$options +${filters[$i]} -${filters[$i]}"
