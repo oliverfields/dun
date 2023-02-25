@@ -1,5 +1,6 @@
 # Directory to store note files
 NOTES_DIR=~/dun
+ARCHIVE_DIR=~/dun/archive
 
 # There are three categories of status (todo, block and done). Each category can have multiple statuses.
 # Default status is first status defined in STATUSES_TODO
