@@ -2,6 +2,19 @@
 
 # Freeform task tracking for plain text notes
 
+_dun_open_editor() {
+  # Open file, optionally on a given line
+  # If you want some other editor(!?), here is where you change;)
+  filename=$1
+  line_number=$2
+
+  if [ $# -eq 2 ]; then
+    line_option=" +$line_number"
+  fi
+
+  vim -c 'set syntax=dun'$line_option "$filename"
+}
+
 _dun_list_tags() {
   cd "$NOTES_DIR" && grep --directories=skip --no-filename --only-matching "#[^# \"']\+" * | sort | uniq
 }
@@ -87,7 +100,7 @@ s/$todos/${ESC}${STATUS_TODO_STYLE} & ${NO_STYLE}/g \
     if [ "$selection" -le ${#lines[@]} ] 2>/dev/null ; then
       IFS=':' read -ra selected_file <<< ${lines[$selection]}
 
-      vim -c 'set syntax=dun' +${selected_file[1]} "${selected_file[0]}" --not-a-term
+      _dun_open_editor "${selected_file[0]}" "${selected_file[1]}"
     else
       exit 0
     fi
@@ -97,6 +110,7 @@ s/$todos/${ESC}${STATUS_TODO_STYLE} & ${NO_STYLE}/g \
 
 # Settings defaults
 NOTES_DIR=~/dun
+ARCHIVE_DIR=~/dun/archive
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
 STATUSES_DONE=('WONT' 'DONE')
@@ -166,7 +180,24 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 
   archive)
     # Move notes that have no tasks or only tasks that are done to archive directory
-    echo "Do me"
+
+    if [ ! -d "$ARCHIVE_DIR" ]; then
+      echo "ARCHIVE_DIR '$ARCHIVE_DIR' does not exist, aborting"
+      exit 1
+    fi
+
+    # Tasks statuses that still have work pending
+    live_statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}")
+    regexp=''
+
+    for s in ${live_statuses[@]}; do
+      regexp="$regexp\|$s"
+    done
+    regexp="${regexp:2}"
+
+    for f in $(grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/*); do
+      mv "$f" "$ARCHIVE_DIR/." 
+    done
     ;;
 
   new)
@@ -187,7 +218,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 
     new_file="${new_file}-$num"
 
-    vim -c 'set syntax=dun' "$new_file"
+    _dun_open_editor "$new_file"
 
     ;;
 
@@ -248,7 +279,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
   bash-complete-options)
     # Print bash complete options
 
-    options="new list recent tags bash-complete-options help"
+    options="archive list new recent tags bash-complete-options help"
 
     # tags and statuses start either with a - or +
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")

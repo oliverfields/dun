@@ -7,15 +7,13 @@ if exists("b:current_syntax")
 endif
 
 syntax keyword dunTODO TODO
-syntax keyword dunWAIT WAIT
-syntax keyword dunWONT WONT
-syntax keyword dunDONE DONE
-syntax match dunTag "\v#[^ ]+"
+syntax keyword dunBLOCK WAIT
+syntax keyword dunDONE WONT DONE
+syntax match dunTag "\v#[^ #]+"
 
-highlight link dunTODO DiffDelete
-highlight link dunWAIT WildMenu
-highlight link dunWONT StatusLineTermNC
+highlight link dunTODO DiffAdd
+highlight link dunBLOCK WildMenu
 highlight link dunDONE StatusLineTermNC
-highlight link dunTag DiffAdd
+highlight link dunTag DiffDelete
 
 let b:current_syntax = "dun"
