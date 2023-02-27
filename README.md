@@ -14,7 +14,9 @@ GIF
 
 Clone the repo.
 
-```git clone https://github.com/oliverfields/dun.git`
+```
+git clone https://github.com/oliverfields/dun.git
+```
 
 Ensure `dun` command is executable.
 
