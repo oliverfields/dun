@@ -20,11 +20,15 @@ git clone https://github.com/oliverfields/dun.git
 
 Ensure `dun` command is executable.
 
-```chmod u+x <path to cloned repo>/dun```
+```
+chmod u+x <path to cloned repo>/dun
+```
 
 Ensure `dun` command is in the PATH, for example make a symlink to `~/.local/bin`.
 
-```ln -s <path to cloned repo>/dun ~/.local/bin/dun```
+```
+ln -s <path to cloned repo>/dun ~/.local/bin/dun
+```
 
 
 ### Configuration
