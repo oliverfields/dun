@@ -42,7 +42,7 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 
 ### Vim syntax
 
-Copy syntax file to enable vim syntax highlighting of statuses and tags.
+Copy syntax file to enable vim syntax highlighting of statuses and tags. Vim syntax must be enabled and will be applied if opening note files via `dun`.
 
 ```
 cp <path to cloned repo>/dun_syntax.vim ~/.vimrc/syntax/dun.vim
