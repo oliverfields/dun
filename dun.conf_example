@@ -10,9 +10,9 @@ ARCHIVE_DIR=~/dun/archive
 
 # Status categories can be styled using escape codes (all statuses in a given category have the same style
 # Note that the \e escape sequence must be omitted, ie use '[1m' for bold, not '\e[1m'
-#STATUS_TODO_STYLE="[1;37;44m"
-#STATUS_BLOCK_STYLE="[1;37;43m"
-#STATUS_DONE_STYLE="[1;37;42m"
-#TAG_STYLE="[1;37;46m"
+#STATUSES_TODO_STYLE="[1;37;44m"
+#STATUSES_BLOCK_STYLE="[1;37;43m"
+#STATUSES_DONE_STYLE="[1;37;42m"
+#TAGS_STYLE="[1;37;46m"
 #HIGHLIGHT_STYLE="[0;35m"
 #FILENAME_STYLE="[0;32m"

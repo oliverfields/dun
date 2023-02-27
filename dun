@@ -78,13 +78,13 @@ _dun_edit_lines() {
 # Remove preceeding spaces and dashes
 s/^\ *// ; s/^-// ; s/^\ *// \
 # Todo statuses
-s/$todos/${ESC}${STATUS_TODO_STYLE} & ${NO_STYLE}/g \
+s/$todos/${ESC}${STATUSES_TODO_STYLE} & ${NO_STYLE}/g \
 # Block statuses
-; s/$blocks/${ESC}${STATUS_BLOCK_STYLE} & ${NO_STYLE}/g \
+; s/$blocks/${ESC}${STATUSES_BLOCK_STYLE} & ${NO_STYLE}/g \
 # Done statuses
-; s/$dones/${ESC}${STATUS_DONE_STYLE} & ${NO_STYLE}/g \
+; s/$dones/${ESC}${STATUSES_DONE_STYLE} & ${NO_STYLE}/g \
 # Tags
-; s/#[^# \"']+/${ESC}${TAG_STYLE} & ${NO_STYLE}/g \
+; s/#[^# \"']+/${ESC}${TAGS_STYLE} & ${NO_STYLE}/g \
 # Select numbers
 ; s/^([0-9]*)/${ESC}${HIGHLIGHT_STYLE}&${NO_STYLE}/ \
 # file name
@@ -111,14 +111,15 @@ s/$todos/${ESC}${STATUS_TODO_STYLE} & ${NO_STYLE}/g \
 # Settings defaults
 NOTES_DIR=~/dun
 ARCHIVE_DIR=~/dun/archive
-STATUSES_TODO=('TODO')
-STATUSES_BLOCK=('WAIT')
-STATUSES_DONE=('WONT' 'DONE')
-STATUSES_TODO_STYLE='[1;37;46m'
-STATUSES_BLOCK_STYLE='[1;37;43m'
-STATUSES_DONE_STYLE='[1;37;46m'
-HIGHLIGHT_STYLE='[0;35m'
-FILENAME_STYLE='[0;32m'
+STATUSES_TODO=("TODO")
+STATUSES_BLOCK=("WAIT")
+STATUSES_DONE=("WONT" "DONE")
+STATUSES_TODO_STYLE="[1;37;44m"
+STATUSES_BLOCK_STYLE="[1;37;43m"
+STATUSES_DONE_STYLE="[1;37;42m"
+HIGHLIGHT_STYLE="[0;35m"
+FILENAME_STYLE="[0;32m"
+TAGS_STYLE="[1;37;46m"
 
 # Load config file
 conf_file=~/.config/dun.conf
@@ -278,8 +279,8 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
         shift
       done
     fi
+
     awk_filter="${awk_filter:4}" # Remove first '&& '
-echo $awk_filter
     # Create list of the note files, use instead of * to ensure only files and that quoteing is correct
     note_files="$(find . -maxdepth 1 -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
 

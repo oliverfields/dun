@@ -52,8 +52,8 @@ Then either reboot or source the relevant file (e.g. `source .bashrc`).
 
 ## Central concepts
 
-1. A task is a single line in a text file that contains a status string (e.g. TODO or DONE)
-2. Tag tasks or other lines by adding #&lt;string&gt;
+1. A task is a single line in a text file that contains a status string (e.g. `TODO` or `DONE`)
+2. Tag tasks or other lines by adding `#string`
 3. The notes directory contains notes(just plain text files) that contain zero or more tasks
 4. CLI for listing tasks from all notes and filtering by statuses and tags
 
