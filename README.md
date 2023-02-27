@@ -9,7 +9,9 @@ GIF
 
 To manage meeting notes and todo tasks from the command line using a very simple rule set and plain text files edited in vim.
 
-There are plenty of both todo list managers and meeting notes tools already, but they often only offer one or the other, require more complex syntax to define tasks or don't use plain text files as a back end. Dun aims to allow free form note taking and easily identify tasks in the text for following up.
+There are plenty of both todo list managers and meeting notes tools already, but they often only offer one or the other, require more complex syntax to define tasks or don't use plain text files as a back end.
+
+Dun allows free form note taking and easily identify tasks in the text to follow up on.
 
 
 ## Installation
@@ -21,7 +23,7 @@ There are plenty of both todo list managers and meeting notes tools already, but
 
 ### Configuration
 
-To change configuration `cp <path to cloned repo>/dun.conf_example .config/dun.conf`.
+To change configuration `cp <path to cloned repo>/dun.conf_example .config/dun.conf` and edit it.
 
 
 ### Vim syntax
@@ -51,7 +53,7 @@ Then either reboot or source the relevant file (e.g. `source .bashrc`).
 ## Central concepts
 
 1. A task is a single line in a text file that contains a status string (e.g. TODO or DONE)
-2. Tag tasks or other lines by adding #<string>
+2. Tag tasks or other lines by adding #&lt;string&gt;
 3. The notes directory contains notes(just plain text files) that contain zero or more tasks
 4. CLI for listing tasks from all notes and filtering by statuses and tags
 
