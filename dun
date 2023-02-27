@@ -4,7 +4,7 @@
 
 _dun_open_editor() {
   # Open file, optionally on a given line
-  # If you want some other editor(!?), here is where you change;)
+  # If you want some other editor(!?), here is your chance;)
   filename=$1
   line_number=$2
 
@@ -148,10 +148,10 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 \e[1mdun\e[0m [archive|list|new|recent|tags|bash-complete-options|help]\e[0m
 
     \e[1marchive\e[0m
-        Move notes that have no pending tasks to archive directory
+        Move notes that have no tasks, or only done tasks, to archive directory
 
     \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
-        List tasks and filter them, if no filter specified filter by TODO status (or default status defined in STATUSES_TODO setting in dun.conf). Filter strings are prefixed by either + or -, + will match if the string is present, whilst - means the string must be absent.
+        List and filter tasks, if no filter specified all tasks with status in status categories TODO and BLOCK will be listedi (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
 
         \e[1mExample:\e[0m
             dun list +#ProjectA -DONE
@@ -195,7 +195,8 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     done
     regexp="${regexp:2}"
 
-    for f in $(grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/*); do
+    grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* | while read f; do
+      echo "Archiving: $f"
       mv "$f" "$ARCHIVE_DIR/." 
     done
     ;;
@@ -240,15 +241,18 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
   list)
     # List tasks filtered by +<word> -<word>
 
+    awk_filter=''
+    filters=''
+
     if [ $# -eq 1 ]; then
-      default_status=${STATUSES_TODO[0]}
-      awk_filter=" && /$default_status/" # The ' && ' is to match with the else result
-      filters=" +$default_status"
+      # _If no filters provided, default to filter by any status in TODO and BLOCK categories
+      live_statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}")
+      for s in ${live_statuses[@]}; do
+        awk_filter="$awk_filter || /$s/"
+        filters="$filters +${s}"
+      done
     else
       shift
-
-      awk_filter=''
-      filters=''
 
       ## Create awk command to filter lines
       while (( $# )); do
@@ -269,7 +273,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
       done
     fi
     awk_filter="${awk_filter:4}" # Remove first '&& '
-
+echo $awk_filter
     # Create list of the note files, use instead of * to ensure only files and that quoteing is correct
     note_files="$(find . -maxdepth 1 -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
 
