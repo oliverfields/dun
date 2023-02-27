@@ -181,9 +181,15 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
   archive)
     # Move notes that have no tasks or only tasks that are done to archive directory
 
+    # Create archive dir if it doesn't exist
     if [ ! -d "$ARCHIVE_DIR" ]; then
-      echo "ARCHIVE_DIR '$ARCHIVE_DIR' does not exist, aborting"
-      exit 1
+      echo "$ARCHIVE_DIR does not exist (change ARCHIVE_DIR in dun.conf for another location). Create it? [y|n]"
+      read selection
+      if [ "$selection" = "y" ]; then
+        mkdir -p "$ARCHIVE_DIR"
+      else
+        exit 0
+      fi 
     fi
 
     # Tasks statuses that still have work pending
