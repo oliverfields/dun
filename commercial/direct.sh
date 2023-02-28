@@ -9,9 +9,10 @@ function annotate() {
   text_file="${file/.gif/-text.gif}"
 
   # Create text
-  convert -font Hack-Regular-Nerd-Font-Complete -pointsize 32 -background '#666666' -stroke white -fill white pango:"$text" "$text_file"
+  convert -font Hack-Regular-Nerd-Font-Complete -pointsize 20 -background '#666666' -border 4 -bordercolor '#666666' -stroke white -fill white pango:"$text" "$text_file"
 
   # Add text to frame file
+  convert "$file" "$text_file" -geometry "$text_position" -composite "$file"
 }
 
 
@@ -32,12 +33,13 @@ done
 
 cd ../frames
 
-annotate "1_create-standup-command.gif" "👆️ Yeah" "+30+30"
-#annotate "2_create-standup-note.gif
-#annotate "3_list-tasks-command.gif
-#annotate "4_list-tasks-before-update.gif
-#annotate "5_update-task-call-cindy-1.gif
-#annotate "6_update-task-call-cindy-2.gif
-#annotate "7_list-tasks-after-update.gif
-#annotate "8_list-projectx-done-tasks-command.gif
-#annotate "9_list-projectx-done-task-list.gif
+annotate "01_create-standup-command.gif" "👆️ Create a new note named standup" "+40+40"
+annotate "02_create-standup-note.gif" "👆️ Note opens in vi, add a new task\nwith status TODO\n\nTasks are any line containing a valid Status\n\nAdd hashtags anywhere to create tags\n\nNotes are plain text files" "+40+40"
+annotate "03_list-tasks-command.gif" "👆️ List open tasks from all notes files" "+40+40"
+annotate "04_list-tasks-before-update.gif" "👈️ Cindy task is\ndone. Lets close.." "+500+90"
+annotate "05_update-task-call-cindy-1.gif" "Change 👆️ TODO to DONE to close task" "+300+300"
+annotate "06_update-task-call-cindy-2.gif" "✅👍️" "+340+330"
+annotate "07_note-markup.gif" "Dun should play nice with\nyour preffered markup👌" "+150+100"
+annotate "08_list-tasks-after-update.gif" "Return to updated\ntask list💫" "+450+60"
+annotate "09_list-projectx-done-tasks-command.gif" "👆️ List all DONE tasks tagged #ProjectX\n\nTab completion for\n- Tags\n- Statuses\n- Arguments" "+60+60"
+#annotate "10_list-projectx-done-task-list.gif"
