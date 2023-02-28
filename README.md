@@ -12,19 +12,37 @@ GIF
 
 ## Installation
 
-1. Clone the repo, e.g. `https://github.com/oliverfields/dun.git`
-2. Ensure command is executable `chmod u+x <path to cloned repo>/dun`
-3. Put *dun* in the PATH, e.g. symlink to *~/.local/bin* `ln -s <path to cloned repo>/dun ~/.local/bin/dun`
+Clone the repo.
+
+```
+git clone https://github.com/oliverfields/dun.git
+```
+
+Ensure `dun` command is executable.
+
+```
+chmod u+x <path to cloned repo>/dun
+```
+
+Ensure `dun` command is in the PATH, for example make a symlink to `~/.local/bin`.
+
+```
+ln -s <path to cloned repo>/dun ~/.local/bin/dun
+```
 
 
 ### Configuration
 
-To change configuration `cp <path to cloned repo>/dun.conf_example .config/dun.conf` and edit it.
+To change the default configuration copy the example config file and edit it.
+
+```
+cp <path to cloned repo>/dun.conf_example .config/dun.conf
+```
 
 
 ### Vim syntax
 
-Copy syntax file to enable vim syntax highlighting of statuses and tags.
+Copy syntax file to enable vim syntax highlighting of statuses and tags. Vim syntax must be enabled and will be applied if opening note files via `dun`.
 
 ```
 cp <path to cloned repo>/dun_syntax.vim ~/.vimrc/syntax/dun.vim
@@ -56,8 +74,8 @@ Dun uses three status categories. Each category may have one or more user config
 
 Default statuses are:
 
-1. TODO (category: TODO)
-1. WAIT (category: BLOCK)
-1. WONT (category: DONE)
-1. DONE (category: DONE)
+- TODO - category: TODO
+- WAIT - category: BLOCK
+- WONT - category: DONE
+- DONE - category: DONE
 
