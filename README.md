@@ -33,7 +33,7 @@ cp <path to cloned repo>/dun_syntax.vim ~/.vimrc/syntax/dun.vim
 
 ### Bash completion
 
-Add the following to `.profile` or `.bashrc` to enable bash tab complete of arguments, statuses and tags.
+Add the following to `.bashrc` to enable bash tab complete of arguments, statuses and tags.
 
 ```
 _dun() {

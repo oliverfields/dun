@@ -261,7 +261,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     else
       shift
 
-      ## Create awk command to filter lines
+      ## Create awk command to filter lines and set arguments
       while (( $# )); do
         filters="$filters $1"
         case ${1:0:1} in
@@ -284,7 +284,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     # Create list of the note files, use instead of * to ensure only files and that quoteing is correct
     note_files="$(find . -maxdepth 1 -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
 
-    _dun_edit_lines "Tasks$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files"
+    _dun_edit_lines "Tasks$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files | sort"
     ;;
 
   bash-complete-options)
