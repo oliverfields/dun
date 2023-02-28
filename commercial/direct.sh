@@ -13,6 +13,9 @@ function annotate() {
 
   # Add text to frame file
   convert "$file" "$text_file" -geometry "$text_position" -composite "$file"
+
+  # Tidy up
+  rm "$text_file"
 }
 
 
@@ -36,10 +39,10 @@ cd ../frames
 annotate "01_create-standup-command.gif" "👆️ Create a new note named standup" "+40+40"
 annotate "02_create-standup-note.gif" "👆️ Note opens in vi, add a new task\nwith status TODO\n\nTasks are any line containing a valid Status\n\nAdd hashtags anywhere to create tags\n\nNotes are plain text files" "+40+40"
 annotate "03_list-tasks-command.gif" "👆️ List open tasks from all notes files" "+40+40"
-annotate "04_list-tasks-before-update.gif" "👈️ Cindy task is\ndone. Lets close.." "+500+90"
-annotate "05_update-task-call-cindy-1.gif" "Change 👆️ TODO to DONE to close task" "+300+300"
-annotate "06_update-task-call-cindy-2.gif" "✅👍️" "+340+330"
-annotate "07_note-markup.gif" "Dun should play nice with\nyour preffered markup👌" "+150+100"
-annotate "08_list-tasks-after-update.gif" "Return to updated\ntask list💫" "+450+60"
-annotate "09_list-projectx-done-tasks-command.gif" "👆️ List all DONE tasks tagged #ProjectX\n\nTab completion for\n- Tags\n- Statuses\n- Arguments" "+60+60"
-#annotate "10_list-projectx-done-task-list.gif"
+annotate "04_list-tasks-before-update.gif" "👈️ Cindy task is done💪\nType 1 + Enter to select\ntask and open note in vi" "+440+70"
+annotate "05_update-task-call-cindy-1.gif" "Vi opend on line 15👌\nNow change TODO to DONE\nto close task" "+270+300"
+annotate "06_update-task-call-cindy-2.gif" "✅👍️" "+360+310"
+annotate "07_note-markup.gif" "Notes are just plain text files.\nDun should play nice with your\npreffered note taking markup👌" "+300+80"
+annotate "08_list-tasks-after-update.gif" "Return to updated\ntask list💫" "+450+110"
+annotate "09_list-projectx-done-tasks-command.gif" "👆️ List all DONE tasks tagged #ProjectX\n\nTab completion for\n- Tags\n- Statuses\n- Arguments" "+40+40"
+#annotate "10_list-projectx-done-task-list.gif" "DONE🤩" "+520+40"
