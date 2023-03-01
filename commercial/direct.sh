@@ -38,12 +38,12 @@ cd ../frames
 annotate "01_create-standup-command.gif" "👆️ Create a new note named standup" "+40+40"
 annotate "02_create-standup-note.gif" "👆️ Note opens in vi, add a new task\nwith status TODO\n\nTasks are any line containing a valid Status\n\nAdd hashtags anywhere to create tags\n\nNotes are plain text files" "+40+40"
 annotate "03_list-tasks-command.gif" "👆️ List open tasks from all notes files" "+40+40"
-annotate "04_list-tasks-before-update.gif" "👈️ Cindy task is done💪\nType 1 + Enter to select\ntask and open note in vi" "+440+70"
-annotate "05_update-task-call-cindy-1.gif" "Vi opened on line 15👌\nNow change TODO to DONE\nto close task" "+270+300"
+annotate "04_list-tasks-before-update.gif" "👈️ Cindy task is done💪\nType 1 + Enter to\nopen note in vi" "+440+70"
+annotate "05_update-task-call-cindy-1.gif" "Vi opens on line 15👌\nChange TODO to DONE\nto close task" "+270+300"
 annotate "06_update-task-call-cindy-2.gif" "✅👍️" "+360+310"
-annotate "07_note-markup.gif" "Notes are just plain text files.\nDun should play nice with your\npreffered note taking markup👌" "+300+80"
+annotate "07_note-markup.gif" "Notes are just plain text files.\nDun should play nice with your\npreferred note taking markup👌" "+300+80"
 annotate "08_list-tasks-after-update.gif" "Closing vi returns to\nupdated task list💫" "+450+110"
-annotate "09_list-projectx-done-tasks-command.gif" "👆️ List all DONE tasks tagged #ProjectX\n\nTab completion for\n- Tags\n- Statuses\n- Arguments" "+40+40"
+#annotate "09_list-projectx-done-tasks-command.gif" "👆️ List all DONE tasks tagged #ProjectX\n\nTab completion for\n- Tags\n- Statuses\n- Arguments" "+40+40"
 #annotate "10_list-projectx-done-task-list.gif" "DONE🤩" "+520+40"
 
 cd ..
@@ -53,13 +53,16 @@ gifsicle --loopcount=forever --colors 256 \
 frames/01_create-standup-command.gif \
 -d 1500 \
 frames/02_create-standup-note.gif \
+-d 500 \
 frames/03_list-tasks-command.gif \
+-d 1200 \
 frames/04_list-tasks-before-update.gif \
+-d 800 \
 frames/05_update-task-call-cindy-1.gif \
+-d 500 \
 frames/06_update-task-call-cindy-2.gif \
+-d 750 \
 frames/07_note-markup.gif \
 frames/08_list-tasks-after-update.gif \
-frames/09_list-projectx-done-tasks-command.gif \
-frames/10_list-projectx-done-task-list.gif \
 > dun-commercial.gif 
 
