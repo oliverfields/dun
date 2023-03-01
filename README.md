@@ -52,7 +52,7 @@ $ dun list
 ```
 
 
-### Configuration
+## Configuration
 
 To change the default configuration copy the example config file and edit it.
 
@@ -61,7 +61,7 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 ```
 
 
-### Vim syntax
+## Vim syntax
 
 Copy syntax file to enable vim syntax highlighting of statuses and tags. Vim syntax must be enabled and will be applied if opening note files via `dun`.
 
@@ -70,7 +70,7 @@ cp <path to cloned repo>/dun_syntax.vim ~/.vimrc/syntax/dun.vim
 ```
 
 
-### Bash completion
+## Bash completion
 
 Add the following to `.bashrc` to enable bash tab complete of arguments, statuses and tags.
 
