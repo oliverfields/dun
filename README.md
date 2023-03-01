@@ -30,6 +30,28 @@ ln -s <path to cloned repo>/dun ~/.local/bin/dun
 ```
 
 
+## Getting started
+
+Create a new note.
+
+```
+dun new
+```
+
+Vi opens, add some tasks in the note.
+
+```
+- Call boss TODO
+- Review X TODO
+```
+
+List tasks.
+
+```
+dun list
+```
+
+
 ### Configuration
 
 To change the default configuration copy the example config file and edit it.
