@@ -35,20 +35,20 @@ ln -s <path to cloned repo>/dun ~/.local/bin/dun
 Create a new note.
 
 ```
-dun new
+$ dun new
 ```
 
 Vi opens, add some tasks in the note.
 
 ```
 - Call boss TODO
-- Review X TODO
+- TODO Review X
 ```
 
 List tasks.
 
 ```
-dun list
+$ dun list
 ```
 
 
