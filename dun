@@ -211,7 +211,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     regexp="${regexp:2}"
 
     grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* | while read f; do
-      echo "Archiving: $f"
+      echo "Archiving: ${f##*/}"
       mv "$f" "$ARCHIVE_DIR/." 
     done
     ;;
@@ -308,7 +308,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 
     options="archive list new open-last recent tags bash-complete-options help"
 
-    # tags and statuses start either with a - or +
+    # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
     readarray tags < <(_dun_list_tags)
     filters=("${statuses[@]}" "${tags[@]}")
@@ -320,7 +320,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     ;;
 
   tags)
-    _dun_list_tags | column
+    _dun_list_tags | column -c $(tput cols) | column -t
     ;;
 
   *)
