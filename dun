@@ -151,7 +151,7 @@ case $1 in
     echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
-\e[1mdun\e[0m [archive|list|new|recent|tags|bash-complete-options|help]\e[0m
+\e[1mdun\e[0m [archive|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
 
     \e[1marchive\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
@@ -169,6 +169,9 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
         \e[1mExample:\e[0m
             dun new retrospective
                 File name will be yyyy-mm-dd-retrospective-0 (if the file already exists the -0 will increment until the file name is unique)
+
+    \e[1mopen-last\e[0m
+        Open most recently modified note
 
     \e[1mrecent\e[0m [NUMBER]
         List the first Number of recently modified note files. Number defaults to 9.
@@ -236,7 +239,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     ;;
 
   recent)
-    #Select to open one of X recently modified files from NOTES_DIR
+    #Select to open one of X recently modified files from NOTES_DIR or open the last modified note
 
     if [ "$2" != "" ]; then
       max_count=$2
@@ -247,6 +250,14 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     # find just files in NOTES_DIR and get their epoch and date stamp, sort (because epoch is first)
     # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
     _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
+
+    ;;
+
+  open-last)
+    # Open the most recently modified note
+
+    last_modified="$(find . -maxdepth 1 -type f -printf '%T@ %p\n' | sort -k1,1nr | head -1 | sed 's_.*\./__')"
+    [ -f "$last_modified" ] && _dun_open_editor "$last_modified" 0
 
     ;;
 
@@ -295,7 +306,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
   bash-complete-options)
     # Print bash complete options
 
-    options="archive list new recent tags bash-complete-options help"
+    options="archive list new open-last recent tags bash-complete-options help"
 
     # tags and statuses start either with a - or +
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
