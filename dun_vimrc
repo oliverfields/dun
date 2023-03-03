@@ -5,6 +5,17 @@
 "  so .dun_vimrc
 "endif
 
+
+" Dictionary completion of statuses and tags
+" ------------------------------------------
+
+if filereadable(".dun_vim_complete")
+  setlocal complete+=k
+  setlocal dictionary+=.dun_vim_completion
+  setlocal iskeyword+=-
+endif
+
+
 " Syntax
 " ------
 
