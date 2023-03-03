@@ -1,5 +1,15 @@
-" Language: dun
-" Maintainer: Oliver Fields
+" Setup
+" 1. Copy this file to your dun notes directory(see dun.conf) and call it .dun_vimrc
+" 2. Add the following to your ~/.vimrc
+"if filereadable(".dun_vimrc")
+"  so .dun_vimrc
+"endif
+
+" Syntax
+" ------
+
+set syntax=dun
+
 " If statuses are changed, this file must be updated too
 
 if exists("b:current_syntax")
@@ -17,3 +27,4 @@ highlight link dunDONE StatusLineTermNC
 highlight link dunTag DiffDelete
 
 let b:current_syntax = "dun"
+

@@ -9,10 +9,10 @@ _dun_open_editor() {
   line_number=$2
 
   if [ $# -eq 2 ]; then
-    line_option=" +$line_number"
+    line_option="+$line_number"
   fi
 
-  vim -c 'set syntax=dun'$line_option "$filename"
+  vim $line_option "$filename"
 }
 
 _dun_list_tags() {
@@ -249,14 +249,14 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 
     # find just files in NOTES_DIR and get their epoch and date stamp, sort (because epoch is first)
     # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
-    _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
+    _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
 
     ;;
 
   open-last)
     # Open the most recently modified note
 
-    last_modified="$(find . -maxdepth 1 -type f -printf '%T@ %p\n' | sort -k1,1nr | head -1 | sed 's_.*\./__')"
+    last_modified="$(find . -maxdepth 1 -not -path '*/.*' -type f -printf '%T@ %p\n' | sort -k1,1nr | head -1 | sed 's_.*\./__')"
     [ -f "$last_modified" ] && _dun_open_editor "$last_modified" 0
 
     ;;
@@ -298,7 +298,8 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 
     awk_filter="${awk_filter:4}" # Remove first '&& '
     # Create list of the note files, use instead of * to ensure only files and that quoteing is correct
-    note_files="$(find . -maxdepth 1 -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
+    # The -not -path ignores dot/hidden files
+    note_files="$(find . -maxdepth 1 -not -path '*/.*' -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
 
     _dun_edit_lines "Task filters$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files | sort"
     ;;
