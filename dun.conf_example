@@ -16,3 +16,16 @@ ARCHIVE_DIR=~/dun/archive
 #TAGS_STYLE="[1;37;46m"
 #HIGHLIGHT_STYLE="[0;35m"
 #FILENAME_STYLE="[0;32m"
+
+# If Vim integration is enabled syntax and dictionary complete will be added to the notes directory.
+# Requires the follwing in ~/.vimrc
+#if filereadable(".dun_vimrc")
+#  so .dun_vimrc
+#endif
+#VIM_INTEGRATION=enabled
+
+# Vim syntax highlight groups mapping
+#VIM_HIGHLIGHTGROUP_TODO=DiffAdd
+#VIM_HIGHLIGHTGROUP_BLOCK=WildMenu
+#VIM_HIGHLIGHTGROUP_DONE=StatusLineTermNC
+#VIM_HIGHLIGHTGROUP_TAG=DiffDelete
