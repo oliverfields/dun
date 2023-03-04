@@ -113,42 +113,8 @@ s/$todos/${ESC}${STATUSES_TODO_STYLE} \1 ${NO_STYLE}/g \
 }
 
 
-# Settings defaults
-NOTES_DIR=~/dun
-ARCHIVE_DIR=~/dun/archive
-STATUSES_TODO=("TODO")
-STATUSES_BLOCK=("WAIT")
-STATUSES_DONE=("WONT" "DONE")
-STATUSES_TODO_STYLE="[1;37;44m"
-STATUSES_BLOCK_STYLE="[1;37;43m"
-STATUSES_DONE_STYLE="[1;37;42m"
-HIGHLIGHT_STYLE="[0;35m"
-FILENAME_STYLE="[0;32m"
-TAGS_STYLE="[1;37;46m"
-
-# Load config file
-conf_file=~/.config/dun.conf
-if [ -f $conf_file ]; then
-  source $conf_file
-fi
-
-# Create notes dir if it doesn't exist
-if [ -d "$NOTES_DIR" ]; then
-  cd "$NOTES_DIR"
-else
-  echo "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location). Create it? [y|n]"
-  read selection
-  if [ "$selection" = "y" ]; then
-    mkdir -p "$NOTES_DIR"
-  else
-    exit 0
-  fi 
-fi
-
-case $1 in
-  help)
-
-    echo -e '
+_dun_print_help() {
+  echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
 \e[1mdun\e[0m [archive|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
@@ -185,7 +151,45 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     \e[1mhelp\e[0m
         This text.
 ' | fmt
-    ;;
+}
+
+
+# Settings defaults
+NOTES_DIR=~/dun
+ARCHIVE_DIR=~/dun/archive
+STATUSES_TODO=("TODO")
+STATUSES_BLOCK=("WAIT")
+STATUSES_DONE=("WONT" "DONE")
+STATUSES_TODO_STYLE="[1;37;44m"
+STATUSES_BLOCK_STYLE="[1;37;43m"
+STATUSES_DONE_STYLE="[1;37;42m"
+HIGHLIGHT_STYLE="[0;35m"
+FILENAME_STYLE="[0;32m"
+TAGS_STYLE="[1;37;46m"
+
+# Load config file
+conf_file=~/.config/dun.conf
+if [ -f $conf_file ]; then
+  source $conf_file
+fi
+
+# Create notes dir if it doesn't exist
+if [ -d "$NOTES_DIR" ]; then
+  cd "$NOTES_DIR"
+else
+  echo "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location). Create it? [y|n]"
+  read selection
+  if [ "$selection" = "y" ]; then
+    mkdir -p "$NOTES_DIR"
+  else
+    exit 0
+  fi 
+fi
+
+case $1 in
+  help)
+     _dun_print_help
+     ;;
 
   archive)
     # Move notes that have no tasks or only tasks that are done to archive directory

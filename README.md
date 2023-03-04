@@ -75,14 +75,10 @@ cp <path to cloned repo>/dun_syntax.vim ~/.vimrc/syntax/dun.vim
 Add the following to `.bashrc` to enable bash tab complete of arguments, statuses and tags.
 
 ```
-_dun() {
-  COMPREPLY=()
-  COMPREPLY=( $(compgen -W "$(dun bash-complete-options)" -- $2) )
-}
-complete -F _dun dun
+complete -W "$(dun 2>/dev/null bash-complete-options)" dun
 ```
 
-Then either reboot or source the relevant file (e.g. `source .bashrc`).
+Then either reboot or `source .bashrc`.
 
 
 ## Task statuses
