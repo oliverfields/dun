@@ -28,5 +28,5 @@ ARCHIVE_DIR=~/dun/archive
 #VIM_STATUSES_TODO_STYLE='ctermbg=blue ctermfg=white cterm=bold'
 #VIM_STATUSES_BLOCK_STYLE='ctermbg=yellow ctermfg=white cterm=bold'
 #VIM_STATUSES_DONE_STYLE='ctermbg=green ctermfg=white cterm=bold'
-#VIM_STATUSES_TAG_STYLE='ctermbg=magenta ctermfg=white cterm=bold'
+#VIM_TAG_STYLE='ctermbg=magenta ctermfg=white cterm=bold'
 
