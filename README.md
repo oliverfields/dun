@@ -6,10 +6,10 @@ Free form note taking and easily identify tasks in the text to follow up on usin
 - Tag tasks or other lines by adding #string
 - Notes(plain text files) contain both notes and zero or more tasks
 - CLI for listing tasks found in notes and filtering them by statuses and tags
+- Vim for editing notes
 
 ![Dun commercial video](https://github.com/oliverfields/dun/blob/main/commercial/dun-commercial.gif)
 
-ℹ️  dun uses Vim for editing, however if you prefere something else this is straight forward to change.
 
 
 ## Installation
