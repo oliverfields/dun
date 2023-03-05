@@ -7,8 +7,10 @@ Free form note taking and easily identify tasks in the text to follow up on usin
 - Notes(plain text files) contain both notes and zero or more tasks
 - CLI for listing tasks found in notes and filtering them by statuses and tags
 
-
 ![Dun commercial video](https://github.com/oliverfields/dun/blob/main/commercial/dun-commercial.gif)
+
+ℹ️  dun uses Vim for editing, however if you prefere something else this is straight forward to change.
+
 
 ## Installation
 
@@ -39,14 +41,16 @@ Create a new note.
 $ dun new
 ```
 
-Vim opens, add some tasks in the note.
+Vim opens, add some text and two tasks to the note and close Vim.
 
 ```
+Hello world:)
+
 - Call boss TODO
 - TODO Review X
 ```
 
-List tasks.
+View all open tasks from all notes files.
 
 ```
 $ dun list
@@ -64,9 +68,9 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 
 ## Vim support
 
-If vim support is enabled statuses and tags will be highlighted and available as autocomplete(Ctr+n). Highlight color/style is configurable.
+Vim support visualy highlights statuses and tags and makes them available as autocomplete(Ctr+n). Highlight color/style is configurable.
 
-Enable vim support by setting `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
+Enable Vim support by setting `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 
 ## Bash completion
 
@@ -76,7 +80,7 @@ Add the following to `.bashrc` to enable bash tab complete of arguments, statuse
 complete -W "$(dun 2>/dev/null bash-complete-options)" dun
 ```
 
-Then either reboot or `source .bashrc`.
+Then `source .bashrc` or reboot to enable.
 
 
 ## Task statuses
@@ -89,8 +93,7 @@ Dun uses three status categories. Each category may have one or more user config
 
 Default statuses are:
 
-- TODO - category: TODO
-- WAIT - category: BLOCK
-- WONT - category: DONE
-- DONE - category: DONE
+- TODO statuses: TODO
+- BLOCK statuses: WAIT
+- DONE statuses: WONT and DONE
 
