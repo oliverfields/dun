@@ -7,6 +7,7 @@ Free form note taking and easily identify tasks in the text to follow up on usin
 - Notes(plain text files) contain both notes and zero or more tasks
 - CLI for listing tasks found in notes and filtering them by statuses and tags
 
+
 ![Dun commercial video](https://github.com/oliverfields/dun/blob/main/commercial/dun-commercial.gif)
 
 ## Installation
@@ -38,7 +39,7 @@ Create a new note.
 $ dun new
 ```
 
-Vi opens, add some tasks in the note.
+Vim opens, add some tasks in the note.
 
 ```
 - Call boss TODO
@@ -61,14 +62,11 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 ```
 
 
-## Vim syntax
+## Vim support
 
-Copy syntax file to enable vim syntax highlighting of statuses and tags. Vim syntax must be enabled and will be applied if opening note files via `dun`.
+If vim support is enabled statuses and tags will be highlighted and available as autocomplete(Ctr+n). Highlight color/style is configurable.
 
-```
-cp <path to cloned repo>/dun_syntax.vim ~/.vimrc/syntax/dun.vim
-```
-
+Enable vim support by setting `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 
 ## Bash completion
 
