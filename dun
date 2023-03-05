@@ -224,10 +224,10 @@ STATUSES_DONE_STYLE='[1;37;42m'
 HIGHLIGHT_STYLE='[0;35m'
 FILENAME_STYLE='[0;32m'
 TAGS_STYLE='[1;37;46m'
-VIM_STATUSES_TODO_STYLE='ctermbg=blue ctermfg=white cterm=bold'
-VIM_STATUSES_BLOCK_STYLE='ctermbg=yellow ctermfg=white cterm=bold'
-VIM_STATUSES_DONE_STYLE='ctermbg=green ctermfg=white cterm=bold'
-VIM_TAG_STYLE='ctermbg=cyan ctermfg=white cterm=bold'
+VIM_STATUSES_TODO_STYLE='ctermbg=darkblue ctermfg=white cterm=bold'
+VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
+VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'
+VIM_TAG_STYLE='ctermbg=darkcyan ctermfg=white cterm=bold'
 VIM_SUPPORT=disabled
 
 
