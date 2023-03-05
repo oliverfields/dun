@@ -24,8 +24,9 @@ ARCHIVE_DIR=~/dun/archive
 #endif
 #VIM_INTEGRATION=enabled
 
-# Vim syntax highlight groups mapping
-#VIM_HIGHLIGHTGROUP_TODO=DiffAdd
-#VIM_HIGHLIGHTGROUP_BLOCK=WildMenu
-#VIM_HIGHLIGHTGROUP_DONE=StatusLineTermNC
-#VIM_HIGHLIGHTGROUP_TAG=DiffDelete
+# Vim highlight groups
+#VIM_STATUSES_TODO_STYLE='ctermbg=blue ctermfg=white cterm=bold'
+#VIM_STATUSES_BLOCK_STYLE='ctermbg=yellow ctermfg=white cterm=bold'
+#VIM_STATUSES_DONE_STYLE='ctermbg=green ctermfg=white cterm=bold'
+#VIM_STATUSES_TAG_STYLE='ctermbg=magenta ctermfg=white cterm=bold'
+

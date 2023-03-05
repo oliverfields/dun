@@ -29,26 +29,26 @@ if filereadable(\".dun_vim_dictionary\")
   set complete+=k.dun_vim_dictionary
 endif
 
-
-\" Syntax
-set syntax=dun
-
-if exists(\"b:current_syntax\")
-  finish
-endif
-
-syntax keyword dunTODO ${STATUSES_TODO[@]}
-syntax keyword dunBLOCK ${STATUSES_BLOCK[@]}
-syntax keyword dunDONE ${STATUSES_DONE[@]}
-syntax match dunTAG \"\\v#[^ #]+\"
-
-highlight link dunTODO $VIM_HIGHLIGHTGROUP_TODO
-highlight link dunBLOCK $VIM_HIGHLIGHTGROUP_BLOCK
-highlight link dunDONE $VIM_HIGHLIGHTGROUP_DONE
-highlight link dunTAG $VIM_HIGHLIGHTGROUP_TAG
-
-let b:current_syntax = \"dun\"
+\" Highlight groups for dun statuses and tags
+highlight dunTODO $VIM_STATUSES_TODO_STYLE
+highlight dunBLOCK $VIM_STATUSES_BLOCK_STYLE
+highlight dunDONE $VIM_STATUSES_DONE_STYLE
+highlight dunTAG $VIM_STATUSES_TAG_STYLE
 "
+
+  # Matchadd applies highlight groups to text
+  for s in ${STATUSES_TODO[@]}; do
+    echo "call matchadd('dunTODO', '\\<$s\\>', 50)"
+  done
+  for s in ${STATUSES_BLOCK[@]}; do
+    echo "call matchadd('dunBLOCK', '\\<$s\\>', 50)"
+  done
+  for s in ${STATUSES_DONE[@]}; do
+    echo "call matchadd('dunDONE', '\\<$s\\>', 50)"
+  done
+
+  # Matchadd tags
+  echo "call matchadd('dunTag', '\\v#[^ #]+', 50)"
 }
 
 
@@ -71,7 +71,10 @@ _dun_open_editor() {
     line_option="+$line_number"
   fi
 
+  # Freshen vim config before and after edit to ensure it is correct
+  _dun_vim_integration
   vim $line_option "$filename"
+  _dun_vim_integration
 }
 
 
@@ -212,19 +215,19 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 # Settings defaults
 NOTES_DIR=~/dun
 ARCHIVE_DIR=~/dun/archive
-STATUSES_TODO=("TODO")
-STATUSES_BLOCK=("WAIT")
-STATUSES_DONE=("WONT" "DONE")
-STATUSES_TODO_STYLE="[1;37;44m"
-STATUSES_BLOCK_STYLE="[1;37;43m"
-STATUSES_DONE_STYLE="[1;37;42m"
-HIGHLIGHT_STYLE="[0;35m"
-FILENAME_STYLE="[0;32m"
-TAGS_STYLE="[1;37;46m"
-VIM_HIGHLIGHTGROUP_TODO=DiffAdd
-VIM_HIGHLIGHTGROUP_BLOCK=WildMenu
-VIM_HIGHLIGHTGROUP_DONE=StatusLineTermNC
-VIM_HIGHLIGHTGROUP_TAG=DiffDelete
+STATUSES_TODO=('TODO')
+STATUSES_BLOCK=('WAIT')
+STATUSES_DONE=('WONT' 'DONE')
+STATUSES_TODO_STYLE='[1;37;44m'
+STATUSES_BLOCK_STYLE='[1;37;43m'
+STATUSES_DONE_STYLE='[1;37;42m'
+HIGHLIGHT_STYLE='[0;35m'
+FILENAME_STYLE='[0;32m'
+TAGS_STYLE='[1;37;46m'
+VIM_STATUSES_TODO_STYLE='ctermbg=blue ctermfg=white cterm=bold'
+VIM_STATUSES_BLOCK_STYLE='ctermbg=yellow ctermfg=white cterm=bold'
+VIM_STATUSES_DONE_STYLE='ctermbg=green ctermfg=white cterm=bold'
+VIM_STATUSES_TAG_STYLE='ctermbg=magenta ctermfg=white cterm=bold'
 VIM_INTEGRATION=disabled
 
 
@@ -233,8 +236,7 @@ conf_file=~/.config/dun.conf
 if [ -f $conf_file ]; then
   source $conf_file
 fi
-_dun_vim_integration
-exit 2
+
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
