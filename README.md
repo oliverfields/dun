@@ -50,7 +50,7 @@ Hello world:)
 - TODO Review X
 ```
 
-View all open tasks from all notes files.
+View all open tasks from all note files.
 
 ```
 $ dun list
