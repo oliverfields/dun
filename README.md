@@ -68,7 +68,7 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 
 ## Vim support
 
-Vim support visualy highlights statuses and tags and makes them available as autocomplete(Ctr+n). Highlight color/style is configurable.
+Vim support visually highlights statuses and tags and also makes them available for autocomplete(Ctr+n).
 
 Enable Vim support by setting `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 
