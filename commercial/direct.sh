@@ -36,7 +36,7 @@ done
 cd ../frames
 
 annotate "01_create-standup-command.gif" "👆️ Create a new note named standup" "+40+40"
-annotate "02_create-standup-note.gif" "👆️ Note opens in Vim. Here a new task has\nbeen added with status TODO" "+80+40"
+annotate "02_create-standup-note.gif" "👆️ Note opens in Vim\n\nHere a new task has been\nadded with status TODO" "+80+40"
 annotate "03_create-standup-note.gif" "Tasks are any line containing a valid Status\n\nAdd #hashtags anywhere to create tags\n\nNotes are plain text files" "+100+60"
 annotate "04_list-tasks-command.gif" "👆️ List open tasks from all notes files" "+40+40"
 annotate "05_list-tasks-before-update.gif" "👈️ Cindy task is done💪\nType 1 + Enter to\nopen note in Vim" "+440+70"
