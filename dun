@@ -228,8 +228,7 @@ VIM_STATUSES_TODO_STYLE='ctermbg=darkblue ctermfg=white cterm=bold'
 VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
 VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'
 VIM_TAG_STYLE='ctermbg=darkcyan ctermfg=white cterm=bold'
-VIM_SUPPORT=disabled
-
+VIM_SUPPORT='disabled'
 
 # Load config file
 conf_file=~/.config/dun.conf
