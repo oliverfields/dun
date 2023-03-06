@@ -71,7 +71,7 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 Vim support visually highlights statuses and tags and also makes them available for dictionary complete(Ctr+n).
 
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
-2. Add the following to `~/.vimrc`
+2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
   ```
   let g:dun_vimrc = expand('%:p:h') . '/.dun_vimrc'
   if filereadable(dun_vimrc)
