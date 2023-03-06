@@ -18,9 +18,10 @@ ARCHIVE_DIR=~/dun/archive
 #FILENAME_STYLE="[0;32m"
 
 # If Vim integration is enabled syntax and dictionary complete will be added to the notes directory.
-# Requires the follwing in ~/.vimrc
-#if filereadable(".dun_vimrc")
-#  so .dun_vimrc
+# Vim support requires the follwing in ~/.vimrc
+#let g:dun_vimrc = expand('%:p:h') . '/.dun_vimrc'
+#if filereadable(dun_vimrc)
+#  exec printf('source %s', g:dun_vimrc)
 #endif
 #VIM_INTEGRATION=enabled
 
