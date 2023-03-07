@@ -156,7 +156,7 @@ s/$todos/${ESC}${STATUSES_TODO_STYLE} \1 ${NO_STYLE}/g \
 
     # Ask user to select line
     let y=${#lines[@]}-1
-    printf "\nType \e${HIGHLIGHT_STYLE}[0-%s]${NO_STYLE} to select, \e${HIGHLIGHT_STYLE}anything${NO_STYLE} else quits\n" "$y"
+    printf "\nType \e${HIGHLIGHT_STYLE}[0-%s]${NO_STYLE} to select, \e${HIGHLIGHT_STYLE}anything${NO_STYLE} to quit\n" "$y"
     read selection < /dev/tty
 
     # Open selected file at given location in editor
@@ -240,7 +240,7 @@ fi
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
 else
-  echo -e "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location), type \e${HIGHLIGHT_STYLE}[c]\e[0m to create, \e${HIGHLIGHT_STYLE}anything\e[0m else quits"
+  echo -e "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location), type \e${HIGHLIGHT_STYLE}[c]\e[0m to create or \e${HIGHLIGHT_STYLE}anything\e[0m to exit"
   read selection
   if [ "$selection" = "c" ]; then
     mkdir -p "$NOTES_DIR"
@@ -259,7 +259,7 @@ case $1 in
 
     # Create archive dir if it doesn't exist
     if [ ! -d "$ARCHIVE_DIR" ]; then
-      echo -e "$ARCHIVE_DIR does not exist (change ARCHIVE_DIR in dun.conf for another location), \e${HIGHLIGHT_STYLE}[c]\e[0m to create, \e${HIGHLIGHT_STYLE}anything\e[0m else quits"
+      echo -e "$ARCHIVE_DIR does not exist (change ARCHIVE_DIR in dun.conf for another location), type \e${HIGHLIGHT_STYLE}[c]\e[0m to create or \e${HIGHLIGHT_STYLE}anything\e[0m to exit"
       read selection
       if [ "$selection" = "c" ]; then
         mkdir -p "$ARCHIVE_DIR"
@@ -283,7 +283,7 @@ case $1 in
       file_name="${f##*/}"
 
       while true; do
-        echo -e "\n\e${FILENAME_STYLE}${file_name}\e[0m\n\e${HIGHLIGHT_STYLE}[a]\e[0m to archive, \e${HIGHLIGHT_STYLE}[v]\e[0m to view, \e${HIGHLIGHT_STYLE}[i]\e[0m to ingnore, \e${HIGHLIGHT_STYLE}anything\e[0m else quits"
+        echo -e "\n\e${FILENAME_STYLE}${file_name}\e[0m\nType \e${HIGHLIGHT_STYLE}[a]\e[0m to archive, \e${HIGHLIGHT_STYLE}[v]\e[0m to view, \e${HIGHLIGHT_STYLE}[i]\e[0m to ingnore or \e${HIGHLIGHT_STYLE}anything\e[0m to exit"
         read selection < /dev/tty
 
         if [ "$selection" = "a" ]; then
