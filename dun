@@ -156,7 +156,7 @@ s/$todos/${ESC}${STATUSES_TODO_STYLE} \1 ${NO_STYLE}/g \
 
     # Ask user to select line
     let y=${#lines[@]}-1
-    printf "\nType \e${HIGHLIGHT_STYLE}0-%s${NO_STYLE} to select, anything else exits\n" "$y"
+    printf "\nType \e${HIGHLIGHT_STYLE}[0-%s]${NO_STYLE} to select, \e${HIGHLIGHT_STYLE}anything${NO_STYLE} else quits\n" "$y"
     read selection < /dev/tty
 
     # Open selected file at given location in editor
@@ -240,9 +240,9 @@ fi
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
 else
-  echo "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location). Create it? [y|n]"
+  echo -e "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location), type \e${HIGHLIGHT_STYLE}[c]\e[0m to create, \e${HIGHLIGHT_STYLE}anything\e[0m else quits"
   read selection
-  if [ "$selection" = "y" ]; then
+  if [ "$selection" = "c" ]; then
     mkdir -p "$NOTES_DIR"
   else
     exit 0
@@ -259,9 +259,9 @@ case $1 in
 
     # Create archive dir if it doesn't exist
     if [ ! -d "$ARCHIVE_DIR" ]; then
-      echo "$ARCHIVE_DIR does not exist (change ARCHIVE_DIR in dun.conf for another location). Create it? [y|n]"
+      echo -e "$ARCHIVE_DIR does not exist (change ARCHIVE_DIR in dun.conf for another location), \e${HIGHLIGHT_STYLE}[c]\e[0m to create, \e${HIGHLIGHT_STYLE}anything\e[0m else quits"
       read selection
-      if [ "$selection" = "y" ]; then
+      if [ "$selection" = "c" ]; then
         mkdir -p "$ARCHIVE_DIR"
       else
         exit 0
@@ -277,10 +277,38 @@ case $1 in
     done
     regexp="${regexp:2}"
 
-    grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* | while read f; do
-      echo "Archiving: ${f##*/}"
-      mv "$f" "$ARCHIVE_DIR/." 
-    done
+    # Loop over every archive candidate and allow user to choose how to handle it
+    while read f; do
+
+      file_name="${f##*/}"
+
+      while true; do
+        echo -e "\n\e${FILENAME_STYLE}${file_name}\e[0m\n\e${HIGHLIGHT_STYLE}[a]\e[0m to archive, \e${HIGHLIGHT_STYLE}[v]\e[0m to view, \e${HIGHLIGHT_STYLE}[i]\e[0m to ingnore, \e${HIGHLIGHT_STYLE}anything\e[0m else quits"
+        read selection < /dev/tty
+
+        if [ "$selection" = "a" ]; then
+          mv "$f" "$ARCHIVE_DIR/." 
+          echo -e "Archived \e${FILENAME_STYLE}$file_name\e[0m"
+          parent_loop_control="continue"
+          break
+        elif [ "$selection" = "v" ]; then
+          # Need to redirect new stderr so vim does not hijack parents
+          vi --not-a-term "$f" < /dev/stderr
+          parent_loop_control="continue"
+        elif [ "$selection" = "i" ]; then
+          echo -e "Ignored \e${FILENAME_STYLE}$file_name\e[0m"
+          parent_loop_control="continue"
+          break
+        else
+          parent_loop_control="break"
+          break
+        fi
+      done
+
+      [ "$parent_loop_control" = "break" ] && break
+
+    done < <(grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/*)
+
     ;;
 
   new)
