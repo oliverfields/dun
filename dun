@@ -181,7 +181,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
         Move notes that have no tasks, or only done tasks, to archive directory
 
     \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
-        List and filter tasks, if no filter specified all tasks with status in status categories TODO and BLOCK will be listedi (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
+        List and filter tasks, default list tasks with status in status categories TODO and BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
 
         \e[1mExample:\e[0m
             $ dun list +#ProjectA -DONE
