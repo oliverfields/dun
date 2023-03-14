@@ -181,7 +181,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
         Move notes that have no tasks, or only done tasks, to archive directory
 
     \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
-        List and filter tasks, default list tasks with status in status categories TODO and BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
+        List and filter tasks, default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
 
         \e[1mExample:\e[0m
             $ dun list +#ProjectA -DONE
@@ -363,10 +363,9 @@ case $1 in
     filters=''
 
     if [ $# -eq 1 ]; then
-      # _If no filters provided, default to filter by any status in TODO and BLOCK categories
-      live_statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}")
-      for s in ${live_statuses[@]}; do
-        awk_filter="$awk_filter || /$s/"
+      # If no filters provided, default to first todo status
+      for s in ${STATUSES_TODO[0]}; do
+        awk_filter="$awk_filter && /$s/"
         filters="$filters +${s}"
       done
     else
