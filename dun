@@ -97,9 +97,6 @@ _dun_edit_lines() {
   # https://misc.flogisoft.com/bash/tip_colors_and_formatting
   # Oneliner to list colors:
   # for x in {0..8}; do for i in {30..37}; do for a in {40..47}; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo ""
-  terminal_width=$(tput cols)
-  tabs 5 # set tabs width
-  let line_column=$terminal_width-16
   ESC=$(printf '\033')
   NO_STYLE=$(printf '\033[0m')
   title="$1"
@@ -107,10 +104,11 @@ _dun_edit_lines() {
 
   # The loop evaluates the command argument and allows user to select a line to edit
   while true; do
+    # Read result of command (must be in correct format, see above)
     readarray lines < <(eval $cmd)
 
+    # No tasks found:(
     if [ ${#lines[@]} -eq 0 ]; then
-      # No tasks found:(
       exit 1
     fi
 
@@ -118,46 +116,42 @@ _dun_edit_lines() {
     blocks="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
     dones="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
 
-    clear
+    title_string=$(printf "%s\n" "$title " | sed -r " \
+# Make everything until first + or - bold
+s/(^[^+\-]*)\ /${ESC}[1m\1${NO_STYLE} /\
+# Color tags
+; s/([+\-])#([^\ ]*)/\1${ESC}${TAGS_STYLE}#\2${NO_STYLE}/g \
+# Color statuses
+; s/([+\-])$todos/\1${ESC}${STATUSES_TODO_STYLE}\2${NO_STYLE}/g \
+; s/([+\-])$blocks/\1${ESC}${STATUSES_BLOCK_STYLE}\2${NO_STYLE}/g \
+; s/([+\-])$dones/\1${ESC}${STATUSES_DONE_STYLE}\2${NO_STYLE}/g")
+# \
+#; s/[^\ ]([+\-])/ \1/g")
 
-    printf "%s\n" "$title " | sed -r \
-" s/(^[^+\-]*)\ /${ESC}[1m\1${NO_STYLE}/\
-; s/([+\-])#([^\ ]*)\ / \1${ESC}${TAGS_STYLE} #\2 ${NO_STYLE}/g \
-; s/([+\-])$todos\ / \1${ESC}${STATUSES_TODO_STYLE} \2 ${NO_STYLE}/g \
-; s/([+\-])$blocks\ / \1${ESC}${STATUSES_BLOCK_STYLE} \2 ${NO_STYLE}/g \
-; s/([+\-])$dones\ / \1${ESC}${STATUSES_DONE_STYLE} \2 ${NO_STYLE}/g"
-
-    for ((i=0;i<${#lines[@]};i++)); do
+    selection="$(for ((i=0;i<${#lines[@]};i++)); do
       IFS=':' read -r -a line <<< "${lines[$i]}"
       filename="${line[0]}"
       line_number="${line[1]}"
       line_text="$(echo "${line[2]}" | sed 's/^ *// ; s/^-// ; s/^ *//')"
 
-      printf "\n%s\t%s\n" "$i" "$line_text"
-      printf "\tfile://%s" "$filename"
+      printf "%s:%s file://%s\n" "$i" "$line_text" "$filename"
 
-         # perl makes text into column, and sed colorizes output
-    done | perl -lpe "s/(.{$line_column,}?)\s/\$1\n\t/g" | sed -r "\
-# Remove preceeding spaces and dashes
-s/^\ *// ; s/^-// ; s/^\ *// \
+    done | sed -r "\
+# Colorizes output:
 # Todo statuses
-s/$todos/${ESC}${STATUSES_TODO_STYLE} \1 ${NO_STYLE}/g \
+s/$todos/${ESC}${STATUSES_TODO_STYLE}&${NO_STYLE}/g \
 # Block statuses
-; s/$blocks/${ESC}${STATUSES_BLOCK_STYLE} & ${NO_STYLE}/g \
+; s/$blocks/${ESC}${STATUSES_BLOCK_STYLE}&${NO_STYLE}/g \
 # Done statuses
-; s/$dones/${ESC}${STATUSES_DONE_STYLE} & ${NO_STYLE}/g \
+; s/$dones/${ESC}${STATUSES_DONE_STYLE}&${NO_STYLE}/g \
 # Tags
-; s/#[^# \"']+/${ESC}${TAGS_STYLE} & ${NO_STYLE}/g \
-# Select numbers
-; s/^([0-9]*)/${ESC}${HIGHLIGHT_STYLE}&${NO_STYLE}/ \
+; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${NO_STYLE}/g \
 # file name
 ; s_file://(.*)_${ESC}${FILENAME_STYLE}\\1${NO_STYLE}_g \
-"
+" | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
 
-    # Ask user to select line
-    let y=${#lines[@]}-1
-    printf "\nType \e${HIGHLIGHT_STYLE}[0-%s]${NO_STYLE} to select, \e${HIGHLIGHT_STYLE}anything else${NO_STYLE} to quit\n" "$y"
-    read selection < /dev/tty
+    # Strip off task content, leaving only array index to $lines
+    selection=${selection//:*}
 
     # Open selected file at given location in editor
     if [ "$selection" -le ${#lines[@]} ] 2>/dev/null ; then
@@ -175,13 +169,13 @@ _dun_print_help() {
   echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
-\e[1mdun\e[0m [archive|fzf|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
+\e[1mdun\e[0m [archive|find|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
 
     \e[1marchive\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
 
-    \e[1mfzf\e[0m
-        Fuzzy search notes directory. Requiers fzf
+    \e[1mfind\e[0m
+        Search notes directory by file name
 
     \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
         List and filter tasks, default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
@@ -214,6 +208,15 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 ' | fmt
 }
 
+
+function _dun_check_dependencies() {
+  for dep in "$@"; do
+    command -v "$dep" >/dev/null 2>&1 || { echo >&2 "Command $dep not found"; exit 1; }
+  done
+}
+
+
+_dun_check_dependencies vim fzf grep awk
 
 # Settings defaults
 NOTES_DIR=~/dun
@@ -314,9 +317,13 @@ case $1 in
 
     ;;
 
-  fzf)
+  find)
     # Search notes dir using fzf and open selection in editor
-    f="$(find "$NOTES_DIR" -not -path '*/.*' -type f | fzf)"
+    f="$(find "$NOTES_DIR" -not -path '*/.*' -type f | fzf --cycle "--header=Find notes")"
+
+    # Exit cleanly if no selection was made in fzf
+    [ $? -eq 130 ] && exit 0
+
     [ -e "$f" ] && _dun_open_editor "$f"
     ;;
 
@@ -410,7 +417,7 @@ case $1 in
   bash-complete-options)
     # Print bash complete options
 
-    options="archive fzf list new open-last recent tags bash-complete-options help"
+    options="archive find list new open-last recent tags bash-complete-options help"
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
