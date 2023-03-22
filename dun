@@ -175,10 +175,13 @@ _dun_print_help() {
   echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
-\e[1mdun\e[0m [archive|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
+\e[1mdun\e[0m [archive|fzf|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
 
     \e[1marchive\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
+
+    \e[1mfzf\e[0m
+        Fuzzy search notes directory. Requiers fzf
 
     \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
         List and filter tasks, default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
@@ -311,6 +314,12 @@ case $1 in
 
     ;;
 
+  fzf)
+    # Search notes dir using fzf and open selection in editor
+    f="$(find "$NOTES_DIR" -not -path '*/.*' -type f | fzf)"
+    [ -e "$f" ] && _dun_open_editor "$f"
+    ;;
+
   new)
     # Create new file in NOTES_DIR
     num=0
@@ -401,7 +410,7 @@ case $1 in
   bash-complete-options)
     # Print bash complete options
 
-    options="archive list new open-last recent tags bash-complete-options help"
+    options="archive fzf list new open-last recent tags bash-complete-options help"
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
