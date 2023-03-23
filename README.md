@@ -1,9 +1,9 @@
 # Dun
 
-Free form note taking and easily identify tasks in the text to follow up on using statuses and tags.
+Free form note taking and follow up tasks using task statuses and tagging.
 
 - A task is a single line in a text file containing a status string (e.g. TODO or DONE)
-- Tag tasks or other lines by adding #string
+- Tag lines by adding #string
 - Notes are plain text files that contain both notes and zero or more tasks
 - Interactive task listing with fuzzy search
 
