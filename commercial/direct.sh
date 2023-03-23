@@ -46,7 +46,7 @@ cp screenshots/* frames/.
 cd frames
 
 annotate "01_create-standup-command.gif" "👆️ Create a new note named standup" "+40+40"
-annotate "02_create-standup-note.gif" "Note opens in Vim\n\nThis note contains a task and some meeting notes" "+80+140"
+annotate "02_create-standup-note.gif" "Note opens in Vim (configurable😅)\n\nThis note contains a task and some meeting notes" "+80+140"
 annotate "03_create-standup-note.gif" "Notes are plain text files\n\nTasks are any line containing a valid Status\n\nAdd #hashtags anywhere to create tags" "+100+160"
 annotate "04_list-tasks-command.gif" "👆️ List open tasks found in the notes" "+40+40"
 annotate "05_list-tasks-fzf.gif" "Type to filter tasks\n\nArrow keys + Enter to select" "+40+200"
