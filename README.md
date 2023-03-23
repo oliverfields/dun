@@ -42,7 +42,7 @@ Create a new note.
 dun new
 ```
 
-Vim opens, add some text and two tasks to the note and close vim.
+Configured editor opens note, add some text and some tasks then and close.
 
 ```
 Hello world:)
