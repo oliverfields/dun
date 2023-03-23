@@ -2,14 +2,12 @@
 
 Free form note taking and easily identify tasks in the text to follow up on using statuses and tags.
 
-- A task is a single line in a text file that contains a status string (e.g. TODO or DONE)
+- A task is a single line in a text file containing a status string (e.g. TODO or DONE)
 - Tag tasks or other lines by adding #string
-- Notes(plain text files) contain both notes and zero or more tasks
-- CLI for listing tasks found in notes and filtering them by statuses and tags
-- Vim for editing notes
+- Notes are plain text files that contain both notes and zero or more tasks
+- Interactive task listing with fuzzy search
 
 ![Dun commercial video](https://github.com/oliverfields/dun/blob/main/commercial/dun-commercial.gif)
-
 
 
 ## Installation
@@ -32,7 +30,8 @@ Ensure `dun` command is in the PATH, for example make a symlink to `~/.local/bin
 ln -s <path to cloned repo>/dun ~/.local/bin/dun
 ```
 
-Ensure [fzf](https://github.com/junegunn/fzf) is installed.
+> **Warning**
+> Dun requires that [fzf](https://github.com/junegunn/fzf) is installed
 
 
 ## Getting started
@@ -40,7 +39,7 @@ Ensure [fzf](https://github.com/junegunn/fzf) is installed.
 Create a new note.
 
 ```
-$ dun new
+dun new
 ```
 
 Vim opens, add some text and two tasks to the note and close Vim.
@@ -55,7 +54,7 @@ Hello world:)
 View all open tasks from all note files.
 
 ```
-$ dun list
+dun list
 ```
 
 
@@ -66,6 +65,29 @@ To change the default configuration copy the example config file and edit it.
 ```
 cp <path to cloned repo>/dun.conf_example .config/dun.conf
 ```
+
+
+## Editor
+
+Dun uses vim as standard and has support for syntax highlighting statuses and tags.
+
+Changing the editor can be configured by adding a bash function to the config (`~/.config/dun.conf`).
+
+```
+_dun_open_editor() {
+  filename=$1
+
+  # If line_number (second argument) is present, use it to open editor on
+  # the correct line, this is dependent on you editor
+  [ $# -eq 2 ] && line_option="+$2"
+
+  # Open the file
+  #emacs $line_option "$filename"
+  nano $line_option "$filename"
+}
+```
+
+Support for syntax highlighting in other editors is not implemented.
 
 
 ## Vim support
