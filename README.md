@@ -69,9 +69,7 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 
 ## Editor
 
-Dun supports vim syntax highlighting and completion(Ctrl+n) of both statuses and tags.
-
-Changing the editor can be configured by adding a bash function to the config (`~/.config/dun.conf`).
+Dun uses vim as default editor, but changing that can be configured by adding a bash function to `~/.config/dun.conf`.
 
 ```
 _dun_open_editor() {
