@@ -32,6 +32,8 @@ Ensure `dun` command is in the PATH, for example make a symlink to `~/.local/bin
 ln -s <path to cloned repo>/dun ~/.local/bin/dun
 ```
 
+Ensure [fzf](https://github.com/junegunn/fzf) is installed.
+
 
 ## Getting started
 
