@@ -42,7 +42,7 @@ Create a new note.
 dun new
 ```
 
-Vim opens, add some text and two tasks to the note and close Vim.
+Vim opens, add some text and two tasks to the note and close vim.
 
 ```
 Hello world:)
@@ -69,7 +69,7 @@ cp <path to cloned repo>/dun.conf_example .config/dun.conf
 
 ## Editor
 
-Dun uses vim as standard and has support for syntax highlighting statuses and tags.
+Dun supports vim syntax highlighting and completion(Ctrl+n) of both statuses and tags.
 
 Changing the editor can be configured by adding a bash function to the config (`~/.config/dun.conf`).
 
@@ -92,7 +92,7 @@ Support for syntax highlighting in other editors is not implemented.
 
 ## Vim support
 
-Vim support visually highlights statuses and tags and also makes them available for dictionary complete(Ctr+n).
+Vim supports highlighting and dictionary completion(Ctrl+p) of both statuses and tags.
 
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
@@ -103,9 +103,10 @@ Vim support visually highlights statuses and tags and also makes them available 
   endif
   ```
 
+
 ## Bash completion
 
-Add the following to `.bashrc` to enable bash tab complete of arguments, statuses and tags.
+Eable bash tab complete of arguments, statuses and tags by adding the following to `.bashrc`.
 
 ```
 complete -W "$(dun 2>/dev/null bash-complete-options)" dun
