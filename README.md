@@ -90,7 +90,7 @@ Support for syntax highlighting in other editors is not implemented.
 
 ## Vim support
 
-Vim supports highlighting and dictionary completion(Ctrl+p) of both statuses and tags.
+Vim supports provides vim highlighting and dictionary completion(Ctrl+p) of both statuses and tags.
 
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
