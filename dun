@@ -89,16 +89,32 @@ _dun_regexp_statuses() {
 }
 
 
-_dun_edit_lines() {
-  # Accepts a title and command that will list tasks (lines in note files) and allows user to select a line and open it in editor repeatedly
-  # $1 argument is the command that when evaluated must produce output in format <filename>:<line number>:<line text>
-
+_dun_colorize() {
+  # Color statuses, tags and file names
   # To make this pretty there is a lot of font coloring going on
   # https://misc.flogisoft.com/bash/tip_colors_and_formatting
   # Oneliner to list colors:
   # for x in {0..8}; do for i in {30..37}; do for a in {40..47}; do echo -ne "\e[$x;$i;$a""m\\\e[$x;$i;$a""m\e[0;37;40m "; done; echo; done; done; echo ""
-  ESC=$(printf '\033')
-  NO_STYLE=$(printf '\033[0m')
+
+  sed -r "\
+# Colorizes output:
+# Todo statuses
+s/$TODOS/${ESC}${STATUSES_TODO_STYLE}&${NO_STYLE}/g \
+# Block statuses
+; s/$BLOCKS/${ESC}${STATUSES_BLOCK_STYLE}&${NO_STYLE}/g \
+# Done statuses
+; s/$DONES/${ESC}${STATUSES_DONE_STYLE}&${NO_STYLE}/g \
+# Tags
+; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${NO_STYLE}/g \
+# file name
+; s_(\([^\)]*\)$)_${ESC}${FILENAME_STYLE}\\1${NO_STYLE}_g" /dev/stdin
+}
+
+
+_dun_edit_lines() {
+  # Accepts a title and command that will list tasks (lines in note files) and allows user to select a line and open it in editor repeatedly
+  # $1 argument is the command that when evaluated must produce output in format <filename>:<line number>:<line text>
+
   title="$1"
   cmd="$2"
 
@@ -112,21 +128,7 @@ _dun_edit_lines() {
       exit 1
     fi
 
-    todos="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
-    blocks="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
-    dones="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
-
-    title_string=$(printf "%s\n" "$title " | sed -r " \
-# Make everything until first + or - bold
-s/(^[^+\-]*)\ /${ESC}[1m\1${NO_STYLE} /\
-# Color tags
-; s/([+\-])#([^\ ]*)/\1${ESC}${TAGS_STYLE}#\2${NO_STYLE}/g \
-# Color statuses
-; s/([+\-])$todos/\1${ESC}${STATUSES_TODO_STYLE}\2${NO_STYLE}/g \
-; s/([+\-])$blocks/\1${ESC}${STATUSES_BLOCK_STYLE}\2${NO_STYLE}/g \
-; s/([+\-])$dones/\1${ESC}${STATUSES_DONE_STYLE}\2${NO_STYLE}/g")
-# \
-#; s/[^\ ]([+\-])/ \1/g")
+    title_string="$(printf "%s\n" "$title " | _dun_colorize)"
 
     selection="$(for ((i=0;i<${#lines[@]};i++)); do
       IFS=':' read -r -a line <<< "${lines[$i]}"
@@ -134,21 +136,9 @@ s/(^[^+\-]*)\ /${ESC}[1m\1${NO_STYLE} /\
       line_number="${line[1]}"
       line_text="$(echo "${line[2]}" | sed 's/^ *// ; s/^-// ; s/^ *//')"
 
-      printf "%s:%s file://%s\n" "$i" "$line_text" "$filename"
+      printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
 
-    done | sed -r "\
-# Colorizes output:
-# Todo statuses
-s/$todos/${ESC}${STATUSES_TODO_STYLE}&${NO_STYLE}/g \
-# Block statuses
-; s/$blocks/${ESC}${STATUSES_BLOCK_STYLE}&${NO_STYLE}/g \
-# Done statuses
-; s/$dones/${ESC}${STATUSES_DONE_STYLE}&${NO_STYLE}/g \
-# Tags
-; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${NO_STYLE}/g \
-# file name
-; s_file://(.*)_${ESC}${FILENAME_STYLE}\\1${NO_STYLE}_g \
-" | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
+    done | _dun_colorize | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,border-bottom,wrap)"
 
     # Strip off task content, leaving only array index to $lines
     selection=${selection//:*}
@@ -241,6 +231,16 @@ conf_file=~/.config/dun.conf
 if [ -f $conf_file ]; then
   source $conf_file
 fi
+
+# Setup globals
+ESC=$(printf '\033')
+NO_STYLE=$(printf '\033[0m')
+
+TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
+BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
+DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
+
+
 
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
@@ -432,6 +432,10 @@ case $1 in
 
   tags)
     _dun_list_tags | column -c $(tput cols) | column -t
+    ;;
+
+  colorize)
+    _dun_colorize
     ;;
 
   *)
