@@ -133,7 +133,7 @@ _dun_edit_lines() {
       IFS=':' read -r -a line <<< "${lines[$i]}"
       filename="${line[0]}"
       line_number="${line[1]}"
-      line_text="$(echo "${line[2]}" | sed 's/^ *// ; s/^-// ; s/^ *//')"
+      line_text="$(echo "${line[2]}" | sed 's/^[ \t]*// ; s/^-// ; s/^[ \t]*//')"
 
       printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
 
