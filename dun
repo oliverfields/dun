@@ -106,8 +106,7 @@ s/$TODOS/${ESC}${STATUSES_TODO_STYLE}&${NO_STYLE}/g \
 ; s/$DONES/${ESC}${STATUSES_DONE_STYLE}&${NO_STYLE}/g \
 # Tags
 ; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${NO_STYLE}/g \
-# file name
-; s_(\([^\)]*\)$)_${ESC}${FILENAME_STYLE}\\1${NO_STYLE}_g" /dev/stdin
+" /dev/stdin
 }
 
 
@@ -128,7 +127,7 @@ _dun_edit_lines() {
       exit 1
     fi
 
-    title_string="$(printf "%s\n" "$title " | _dun_colorize)"
+    title_string="$(printf "%s" "$title" | _dun_colorize)"
 
     selection="$(for ((i=0;i<${#lines[@]};i++)); do
       IFS=':' read -r -a line <<< "${lines[$i]}"
@@ -138,7 +137,7 @@ _dun_edit_lines() {
 
       printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
 
-    done | _dun_colorize | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,border-bottom,wrap)"
+    done | _dun_colorize | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
 
     # Strip off task content, leaving only array index to $lines
     selection=${selection//:*}
@@ -159,10 +158,13 @@ _dun_print_help() {
   echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
-\e[1mdun\e[0m [archive|find|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
+\e[1mdun\e[0m [archive|colorize|find|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
 
     \e[1marchive\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
+
+    \e[1mcolorize\e[0m
+        Colorize stdin
 
     \e[1mfind\e[0m
         Search notes directory by file name
@@ -218,7 +220,6 @@ STATUSES_TODO_STYLE='[1;37;44m'
 STATUSES_BLOCK_STYLE='[1;37;43m'
 STATUSES_DONE_STYLE='[1;37;42m'
 HIGHLIGHT_STYLE='[0;35m'
-FILENAME_STYLE='[0;32m'
 TAGS_STYLE='[1;37;46m'
 VIM_STATUSES_TODO_STYLE='ctermbg=darkblue ctermfg=white cterm=bold'
 VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
@@ -239,8 +240,6 @@ NO_STYLE=$(printf '\033[0m')
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
 DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
-
-
 
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
@@ -283,37 +282,16 @@ case $1 in
     done
     regexp="${regexp:2}"
 
-    # Loop over every archive candidate and allow user to choose how to handle it
-    while read f; do
-
-      file_name="${f##*/}"
-
-      while true; do
-        echo -e "\n\e${FILENAME_STYLE}${file_name}\e[0m\nType \e${HIGHLIGHT_STYLE}[a]\e[0m to archive, \e${HIGHLIGHT_STYLE}[v]\e[0m to view, \e${HIGHLIGHT_STYLE}[i]\e[0m to ingnore or \e${HIGHLIGHT_STYLE}anything else\e[0m to exit"
-        read selection < /dev/tty
-
-        if [ "$selection" = "a" ]; then
-          mv "$f" "$ARCHIVE_DIR/." 
-          echo -e "Archived \e${FILENAME_STYLE}$file_name\e[0m"
-          parent_loop_control="continue"
-          break
-        elif [ "$selection" = "v" ]; then
-          # Need to redirect new stderr so vim does not hijack parents
-          vi --not-a-term "$f" < /dev/stderr
-          parent_loop_control="continue"
-        elif [ "$selection" = "i" ]; then
-          echo -e "Ignored \e${FILENAME_STYLE}$file_name\e[0m"
-          parent_loop_control="continue"
-          break
-        else
-          parent_loop_control="break"
-          break
-        fi
-      done
-
-      [ "$parent_loop_control" = "break" ] && break
-
-    done < <(grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/*)
+    # Grep to find notes with no open tasks
+    # sed removes filepath
+    # fzf to view and select notes to archive
+    grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* \
+    | sed "s#.*/##g" \
+    | fzf --multi --cycle "--header=Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
+    | while read f; do
+      mv "$NOTES_DIR/$f" "$ARCHIVE_DIR/."
+      echo -e "Archived ${f##*/}"
+    done
 
     ;;
 
@@ -417,7 +395,7 @@ case $1 in
   bash-complete-options)
     # Print bash complete options
 
-    options="archive find list new open-last recent tags bash-complete-options help"
+    options="archive colorize find list new open-last recent tags bash-complete-options help"
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")

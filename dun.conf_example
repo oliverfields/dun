@@ -17,7 +17,6 @@
 #STATUSES_DONE_STYLE='[1;37;42m'
 #TAGS_STYLE='[1;37;46m'
 #HIGHLIGHT_STYLE='[0;35m'
-#FILENAME_STYLE='[0;32m'
 
 
 # Uncomment the function below and customize to your preferred exitor
