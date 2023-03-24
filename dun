@@ -158,45 +158,46 @@ _dun_print_help() {
   echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
-\e[1mdun\e[0m [archive|colorize|find|list|new|open-last|recent|tags|bash-complete-options|help]\e[0m
-
-    \e[1marchive\e[0m
+    \e[1marchive-notes\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
 
-    \e[1mcolorize\e[0m
-        Colorize stdin
-
-    \e[1mfind\e[0m
-        Search notes directory by file name
-
-    \e[1mlist\e[0m [[+|-]<FILTER STRING>..]
-        List and filter tasks, default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
-
-        \e[1mExample:\e[0m
-            $ dun list +#ProjectA -DONE
-                List tasks that are tagged #ProjectA and are not DONE
-
-    \e[1mnew\e[0m [NAME STRING]
+    \e[1mnew-note\e[0m [NAME STRING]
         Create new note text file in NOTES_DIR. If Name is specified the file name will be  yyyy-mm-dd-[name]-[increment], else just yyyy-mm-dd-[increment].
 
         \e[1mExample:\e[0m
             $ dun new retrospective
                 File name will be yyyy-mm-dd-retrospective-0 (if the file already exists the -0 will increment until the file name is unique)
 
-    \e[1mopen-last\e[0m
+    \e[1mnotes\e[0m
+        Search notes
+
+    \e[1mopen-last-note\e[0m
         Open most recently modified note
 
-    \e[1mrecent\e[0m [NUMBER]
+    \e[1mrecent-notes\e[0m [NUMBER]
         List the first Number of recently modified note files. Number defaults to 9.
+
+    \e[1mtasks\e[0m [[+|-]<FILTER STRING>..]
+        List and filter tasks, default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
+
+        \e[1mExample:\e[0m
+            $ dun list +#ProjectA -DONE
+                List tasks that are tagged #ProjectA and are not DONE
 
     \e[1mtags\e[0m
         List tags found in notes
+
+    \e[1mcolorize\e[0m
+        Colorize stdin
 
     \e[1mbash-complete-options\e[0m
         Print options for use with bash complete
 
     \e[1mhelp\e[0m
         This text.
+
+\e[1mUsage: dun\e[0m [archive-notes|last-note|new-note|notes|recent-notes|tasks|help]\e[0m
+
 ' | fmt
 }
 
@@ -259,7 +260,7 @@ case $1 in
      _dun_print_help
      ;;
 
-  archive)
+  archive-notes)
     # Move notes that have no tasks or only tasks that are done to archive directory
 
     # Create archive dir if it doesn't exist
@@ -295,9 +296,11 @@ case $1 in
 
     ;;
 
-  find)
+  notes)
     # Search notes dir using fzf and open selection in editor
-    f="$(find "$NOTES_DIR" -not -path '*/.*' -type f | fzf --cycle "--header=Find notes")"
+    f="$(find "$NOTES_DIR" -not -path '*/.*' -type f \
+    | sed "s#$NOTES_DIR/##g" \
+    | fzf --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
 
     # Exit cleanly if no selection was made in fzf
     [ $? -eq 130 ] && exit 0
@@ -305,7 +308,7 @@ case $1 in
     [ -e "$f" ] && _dun_open_editor "$f"
     ;;
 
-  new)
+  new-note)
     # Create new file in NOTES_DIR
     num=0
 
@@ -327,7 +330,7 @@ case $1 in
 
     ;;
 
-  recent)
+  recent-notes)
     #Select to open one of X recently modified files from NOTES_DIR or open the last modified note
 
     if [ "$2" != "" ]; then
@@ -342,7 +345,7 @@ case $1 in
 
     ;;
 
-  open-last)
+  open-last-note)
     # Open the most recently modified note
 
     last_modified="$(find . -maxdepth 1 -not -path '*/.*' -type f -printf '%T@ %p\n' | sort -k1,1nr | head -1 | sed 's_.*\./__')"
@@ -350,7 +353,7 @@ case $1 in
 
     ;;
 
-  list)
+  tasks)
     # List tasks filtered by +<word> -<word>
 
     awk_filter=''
@@ -395,7 +398,7 @@ case $1 in
   bash-complete-options)
     # Print bash complete options
 
-    options="archive colorize find list new open-last recent tags bash-complete-options help"
+    options="archive-notes colorize tasks notes new-note open-last-note recent-notes tags bash-complete-options help"
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
