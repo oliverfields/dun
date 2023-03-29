@@ -3,7 +3,7 @@
 # Freeform task tracking for plain text notes
 
 _dun_list_tags() {
-  cd "$NOTES_DIR" && grep --directories=skip --no-filename --only-matching "#[^# \"']\+" * | sort | uniq
+  cd "$NOTES_DIR" && grep --directories=skip --no-filename --only-matching "#[^# \"',.]\+" * | sort | uniq
 }
 
 
@@ -154,6 +154,10 @@ _dun_edit_lines() {
 }
 
 
+_dun_usage() {
+  printf "\e[1mUsage\e[0m dun [%s]" "$(echo -n "${DUN_ARGUMENTS[@]}" | tr ' ' '|')"
+}
+
 _dun_print_help() {
   echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
@@ -195,10 +199,10 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 
     \e[1mhelp\e[0m
         This text.
-
-\e[1mUsage: dun\e[0m [archive-notes|last-note|new-note|notes|recent-notes|tasks|help]\e[0m
-
 ' | fmt
+
+_dun_usage
+echo
 }
 
 
@@ -241,7 +245,7 @@ NO_STYLE=$(printf '\033[0m')
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
 DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
-
+DUN_ARGUMENTS=("archive-notes" "last-note" "new-note" "notes" "open-last-note" "recent-notes" "tasks" "help" "bash-complete-options" "colorize")
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
@@ -402,6 +406,7 @@ case $1 in
     # Print bash complete options
 
     options="archive-notes colorize tasks notes new-note open-last-note recent-notes tags bash-complete-options help"
+    options="${DUN_ARGUMENTS[@]}"
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
@@ -424,7 +429,7 @@ case $1 in
 
   *)
     echo "Unknown argument: $1"
-    echo -e "Maybe try \e[1mdun help\e[0m?"
+    _dun_usage
     exit 1
     ;;
 esac
