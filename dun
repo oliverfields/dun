@@ -290,8 +290,11 @@ case $1 in
     # Grep to find notes with no open tasks
     # sed removes filepath
     # fzf to view and select notes to archive
-    grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* \
-    | sed "s#.*/##g" \
+    archive_candidates="$(grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* | sed "s#.*/##g")"
+
+    [ "$archive_candidates" = "" ] && exit 0
+
+    echo "$archive_candidates" \
     | fzf --multi --cycle "--header=Archive notes. Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
     | while read f; do
       mv "$NOTES_DIR/$f" "$ARCHIVE_DIR/."
