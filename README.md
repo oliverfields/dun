@@ -39,7 +39,7 @@ ln -s <path to cloned repo>/dun ~/.local/bin/dun
 Create a new note.
 
 ```
-dun new
+dun new-note <note name, optional>
 ```
 
 Configured editor opens note, add some text and some tasks then and close.
@@ -54,7 +54,7 @@ Hello world:)
 View all open tasks from all note files.
 
 ```
-dun list
+dun tasks
 ```
 
 
@@ -63,7 +63,7 @@ dun list
 To change the default configuration copy the example config file and edit it.
 
 ```
-cp <path to cloned repo>/dun.conf_example .config/dun.conf
+cp <path to cloned repo>/dun.conf_example ~/.config/dun.conf
 ```
 
 
