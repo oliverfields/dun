@@ -107,7 +107,10 @@ Vim supports provides vim highlighting and dictionary completion(Ctrl+p) of both
 Eable bash tab complete of arguments, statuses and tags by adding the following to `.bashrc`.
 
 ```
-complete -W "$(dun 2>/dev/null bash-complete-options)" dun
+_dun() {
+  COMPREPLY=($(compgen -W "$(dun bash-complete-options)" "${COMP_WORDS[-1]}"))
+}
+complete -F _dun dun
 ```
 
 Then `source .bashrc` or reboot to enable.

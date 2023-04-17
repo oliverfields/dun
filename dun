@@ -202,7 +202,6 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 ' | fmt
 
 _dun_usage
-echo
 }
 
 
