@@ -155,7 +155,7 @@ _dun_edit_lines() {
 
 
 _dun_usage() {
-  printf "\e[1mUsage\e[0m dun [%s]" "$(echo -n "${DUN_ARGUMENTS[@]}" | tr ' ' '|')"
+  printf "\e[1mUsage\e[0m dun [%s]\n" "$(echo -n "${DUN_ARGUMENTS[@]}" | tr ' ' '|')"
 }
 
 _dun_print_help() {
