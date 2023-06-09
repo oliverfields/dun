@@ -373,7 +373,7 @@ case $action in
 
     awk_filter=''
     filters=''
-echo $#
+
     if [ $# -lt 2 ]; then
       # If no filters provided, default to first todo status
       for s in ${STATUSES_TODO[0]}; do
