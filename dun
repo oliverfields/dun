@@ -258,7 +258,13 @@ else
   fi 
 fi
 
-case $1 in
+if [ $# -eq 0 ]; then
+  action="tasks"
+else
+  action=$1
+fi
+
+case $action in
   help)
      _dun_print_help
      ;;
@@ -367,8 +373,8 @@ case $1 in
 
     awk_filter=''
     filters=''
-
-    if [ $# -eq 1 ]; then
+echo $#
+    if [ $# -lt 2 ]; then
       # If no filters provided, default to first todo status
       for s in ${STATUSES_TODO[0]}; do
         awk_filter="$awk_filter && /$s/"
