@@ -137,7 +137,7 @@ _dun_edit_lines() {
 
       printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
 
-    done | _dun_colorize | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
+    done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
 
     # Strip off task content, leaving only array index to $lines
     selection=${selection//:*}
@@ -300,7 +300,7 @@ case $action in
     [ "$archive_candidates" = "" ] && exit 0
 
     echo "$archive_candidates" \
-    | fzf --multi --cycle "--header=Archive notes. Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
+    | fzf --exact --multi --cycle "--header=Archive notes. Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
     | while read f; do
       mv "$NOTES_DIR/$f" "$ARCHIVE_DIR/."
       echo -e "Archived ${f##*/}"
@@ -314,7 +314,7 @@ case $action in
     while true; do
       f="$(find "$NOTES_DIR" -not -path '*/.*' -type f \
       | sed "s#$NOTES_DIR/##g" \
-      | fzf --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
+      | fzf --exact --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
 
       # Exit cleanly if no selection was made in fzf
       [ $? -eq 130 ] && exit 0
@@ -351,7 +351,7 @@ case $action in
     if [ "$2" != "" ]; then
       max_count=$2
     else
-      max_count=10
+      max_count=99
     fi
 
     # find just files in NOTES_DIR and get their epoch and date stamp, sort (because epoch is first)
