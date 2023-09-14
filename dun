@@ -181,6 +181,9 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     \e[1mrecent-notes\e[0m [NUMBER]
         List the first Number of recently modified note files. Number defaults to 9.
 
+    \e[1mscratchpad\e[0m
+        Open note file defined by config setting SCRATCHPAD
+
     \e[1mtasks\e[0m [[+|-]<FILTER STRING>..]
         List and filter tasks, default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
 
@@ -201,7 +204,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
         This text.
 ' | fmt
 
-_dun_usage
+  _dun_usage
 }
 
 
@@ -217,6 +220,7 @@ _dun_check_dependencies vim fzf grep awk
 # Settings defaults
 NOTES_DIR=~/dun
 ARCHIVE_DIR=~/dun/archive
+SCRATCHPAD=~/dun/scratchpad
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
 STATUSES_DONE=('WONT' 'DONE')
@@ -244,7 +248,7 @@ NO_STYLE=$(printf '\033[0m')
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
 DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
-DUN_ARGUMENTS=("archive-notes" "last-note" "new-note" "notes" "open-last-note" "recent-notes" "tasks" "help" "bash-complete-options" "colorize")
+DUN_ARGUMENTS=("archive-notes" "last-note" "new-note" "notes" "open-last-note" "recent-notes" "scratchpad" "tasks" "help" "bash-complete-options" "colorize")
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
@@ -413,7 +417,7 @@ case $action in
   bash-complete-options)
     # Print bash complete options
 
-    options="archive-notes colorize tasks notes new-note open-last-note recent-notes tags bash-complete-options help"
+    options="archive-notes colorize tasks notes new-note open-last-note recent-notes scratchpad tags bash-complete-options help"
     options="${DUN_ARGUMENTS[@]}"
 
     # tags and statuses start either with a - or +|
@@ -434,7 +438,9 @@ case $action in
   colorize)
     _dun_colorize
     ;;
-
+  scratchpad)
+    _dun_open_editor "$SCRATCHPAD"
+    ;;
   *)
     echo "Unknown argument: $1"
     _dun_usage

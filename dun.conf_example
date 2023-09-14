@@ -1,6 +1,8 @@
 # Notes directories
 #NOTES_DIR=~/dun
 #ARCHIVE_DIR=~/dun/archive
+# Use scratchpad for random tasks
+#SCRATCHPAD=~/dun/scratchpad
 
 
 # There are three categories of status (todo, block and done). Each category can have multiple statuses.
