@@ -154,7 +154,7 @@ CMDEOF
 
       printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
 
-    done | _dun_colorize | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
+    done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
     #done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
 
     # Strip off task content, leaving only array index to $lines
@@ -364,14 +364,15 @@ case $action in
     # sed removes filepath
     # fzf to view and select notes to archive
     # grep
-    #   -l = --files-without-match
+    #   -L = --files-without-match
     #   -s = --no-messages
-    archive_candidates="$(grep "$regexp" -l -s $NOTES_DIR/* | sed "s#.*/##g")"
+    archive_candidates="$(grep "$regexp" -L -s -d skip $NOTES_DIR/* | sed "s#.*/##g")"
 
     [ "$archive_candidates" = "" ] && exit 0
 
+    #| fzf --exact --multi --cycle "--header=Archive notes. Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
     echo "$archive_candidates" \
-    | fzf --exact --multi --cycle "--header=Archive notes. Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
+    | fzf --exact --multi --cycle "--header=Archive notes containing no open tasks. Tab to select multiple" \
     | while read f; do
       mv "$NOTES_DIR/$f" "$ARCHIVE_DIR/."
       echo -e "Archived ${f##*/}"
@@ -385,8 +386,9 @@ case $action in
     while true; do
       f="$(find "$NOTES_DIR" -not -path '*/.*' -type f \
       | sed "s#$NOTES_DIR/##g" \
-      | fzf --exact --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
+      | fzf --exact --cycle "--header=Notes")"
 
+      #| fzf --exact --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
       # Exit cleanly if no selection was made in fzf
       [ $? -eq 130 ] && exit 0
 
