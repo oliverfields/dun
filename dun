@@ -154,7 +154,8 @@ CMDEOF
 
       printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
 
-    done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
+    done | _dun_colorize | fzf --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
+    #done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
 
     # Strip off task content, leaving only array index to $lines
     selection=${selection//:*}
@@ -477,7 +478,10 @@ case $action in
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
-    readarray tags < <(_dun_list_tags)
+    #readarray tags < <(_dun_list_tags)
+    readarray -u 6 tags 6<<-CMDEOF
+_dun_list_tags
+CMDEOF
     filters=("${statuses[@]}" "${tags[@]}")
     for ((i=0;i<${#filters[@]};i++)); do
       options="$options +${filters[$i]} -${filters[$i]}"
