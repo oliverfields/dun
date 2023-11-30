@@ -116,7 +116,7 @@ s/$TODOS/${ESC}${STATUSES_TODO_STYLE}&${NO_STYLE}/g \
 ; s/$DONES/${ESC}${STATUSES_DONE_STYLE}&${NO_STYLE}/g \
 # Tags
 ; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${NO_STYLE}/g \
-" /dev/stdin
+" -
 }
 
 
@@ -132,7 +132,6 @@ _dun_edit_lines() {
     # Read result of command (must be in correct format, see above)
     lines=()
 
-    #readarray -u 0 lines < <(eval $cmd)
     for line in "$(eval $cmd)"; do
       lines+=("$line")
     done
