@@ -130,7 +130,7 @@ _dun_edit_lines() {
   # The loop evaluates the command argument and allows user to select a line to edit
   while true; do
     # Read result of command (must be in correct format, see above)
-    readarray lines < <(eval $cmd)
+    readarray -u 0 lines < <(eval $cmd)
 
     # No tasks found:(
     if [ ${#lines[@]} -eq 0 ]; then
