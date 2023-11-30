@@ -51,3 +51,7 @@
 #VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'
 #VIM_TAG_STYLE='ctermbg=darkcyan ctermfg=white cterm=bold'
 
+
+# If notes directory is a git repo and this setting is enabled dun will sync changes to a remote git repository.
+#GIT_SYNC=enabled
+

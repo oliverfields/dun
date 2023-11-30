@@ -215,6 +215,53 @@ function _dun_check_dependencies() {
 }
 
 
+# For all git repositories in vault, run batch commands
+function _git_sync() {
+
+  local action="$1"
+  local git_dir="$NOTES_DIR/.git"
+
+  [ -d "$git_dir" ] || return
+
+  [ "$GIT_SYNC" != "enabled" ] && return
+
+  if ! command -v git &> /dev/null; then
+      error "git command not found"
+  fi
+
+  cd "$NOTES_DIR" || error "Unable to cd to $NOTES_DIR"
+
+  if [[ $(git branch -r) ]]; then
+    has_remote="yes"
+  else
+    has_remote="no"
+  fi
+
+  case $action in
+    pull)
+      if [ "$has_remote" = "yes" ]; then
+        #echo "Checking for updates to $git_dir.."
+        git pull --quiet || error "Unable to pull repo $repo remote"
+      fi
+    ;;
+    commitpush)
+      # Check if changes, if so commit and push
+      if [ -n "$(git status --porcelain)" ]; then
+        #echo "Modifications found in $git_dir.."
+        git add -A || error "Git add failed"
+        git commit -m 'Overtake sync' --quiet || error "Git commit failed"
+
+        if [ "$has_remote" = "yes" ]; then
+          #echo "Uploading changes to $git_dir.."
+          git push --quiet || error "Unable to push to remote git"
+        fi
+      fi
+    ;;
+    *) error "No valid action supplied for _git_sync()" ;;
+  esac
+}
+
+
 _dun_check_dependencies vim fzf grep awk
 
 # Settings defaults
@@ -234,6 +281,7 @@ VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
 VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'
 VIM_TAG_STYLE='ctermbg=darkcyan ctermfg=white cterm=bold'
 VIM_SUPPORT='disabled'
+GIT_SYNC='disabled'
 
 # Load config file
 conf_file=~/.config/dun.conf
@@ -249,6 +297,7 @@ TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
 DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
 DUN_ARGUMENTS=("archive-notes" "last-note" "new-note" "notes" "open-last-note" "recent-notes" "scratchpad" "tasks" "help" "bash-complete-options" "colorize")
+
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
@@ -267,6 +316,11 @@ if [ $# -eq 0 ]; then
 else
   action=$1
 fi
+
+case $action in
+  help|bash-complete-options|colorize) : ;; # Don't sync git
+  *) _git_sync pull ;;
+esac
 
 case $action in
   help)
@@ -446,5 +500,10 @@ case $action in
     _dun_usage
     exit 1
     ;;
+esac
+
+case $action in
+  help|bash-complete-options|colorize) : ;; # Don't sync git
+  *) _git_sync commitpush ;;
 esac
 

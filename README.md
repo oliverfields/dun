@@ -6,6 +6,7 @@ Free form note taking and follow up tasks using task statuses and tagging.
 - Tag lines by adding #string
 - Notes are plain text files that contain both notes and zero or more tasks
 - Interactive task listing with fuzzy search
+- Sync Notes to a remote git repository
 
 ![Dun commercial video](https://github.com/oliverfields/dun/blob/main/commercial/dun-commercial.gif)
 
