@@ -2,6 +2,13 @@
 
 # Freeform task tracking for plain text notes
 
+
+_error() {
+  echo "Error: $1" 1>&2
+  exit 1
+}
+
+
 _dun_list_tags() {
   cd "$NOTES_DIR" && grep --directories=skip --no-filename --only-matching "#[^# \"',.]\+" * | sort | uniq
 }
@@ -208,7 +215,7 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
 }
 
 
-function _dun_check_dependencies() {
+_dun_check_dependencies() {
   for dep in "$@"; do
     command -v "$dep" >/dev/null 2>&1 || { echo >&2 "Command $dep not found"; exit 1; }
   done
@@ -216,7 +223,7 @@ function _dun_check_dependencies() {
 
 
 # For all git repositories in vault, run batch commands
-function _git_sync() {
+_git_sync() {
 
   local action="$1"
   local git_dir="$NOTES_DIR/.git"
@@ -226,10 +233,10 @@ function _git_sync() {
   [ "$GIT_SYNC" != "enabled" ] && return
 
   if ! command -v git &> /dev/null; then
-      error "git command not found"
+      _error "git command not found"
   fi
 
-  cd "$NOTES_DIR" || error "Unable to cd to $NOTES_DIR"
+  cd "$NOTES_DIR" || _error "Unable to cd to $NOTES_DIR"
 
   if [[ $(git branch -r) ]]; then
     has_remote="yes"
@@ -241,23 +248,23 @@ function _git_sync() {
     pull)
       if [ "$has_remote" = "yes" ]; then
         #echo "Checking for updates to $git_dir.."
-        git pull --quiet || error "Unable to pull repo $repo remote"
+        git pull --quiet || _error "Unable to pull from remote repo"
       fi
     ;;
     commitpush)
       # Check if changes, if so commit and push
       if [ -n "$(git status --porcelain)" ]; then
         #echo "Modifications found in $git_dir.."
-        git add -A || error "Git add failed"
-        git commit -m 'Overtake sync' --quiet || error "Git commit failed"
+        git add -A || _error "Git add failed"
+        git commit -m 'Overtake sync' --quiet || _error "Git commit failed"
 
         if [ "$has_remote" = "yes" ]; then
           #echo "Uploading changes to $git_dir.."
-          git push --quiet || error "Unable to push to remote git"
+          git push --quiet || _error "Unable to push to remote git"
         fi
       fi
     ;;
-    *) error "No valid action supplied for _git_sync()" ;;
+    *) _error "No valid action supplied for _git_sync()" ;;
   esac
 }
 
