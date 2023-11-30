@@ -124,17 +124,20 @@ _dun_edit_lines() {
   # Accepts a title and command that will list tasks (lines in note files) and allows user to select a line and open it in editor repeatedly
   # $1 argument is the command that when evaluated must produce output in format <filename>:<line number>:<line text>
 
-  title="$1"
-  cmd="$2"
+  local title="$1"
+  local cmd="$2"
 
   # The loop evaluates the command argument and allows user to select a line to edit
   while true; do
     # Read result of command (must be in correct format, see above)
-    lines=()
 
-    for line in "$(eval $cmd)"; do
-      lines+=("$line")
-    done
+    # Process substitution is sooo much nicer, but this has to work on ish
+    #readarray -u 0 lines < <(eval $cmd)
+    # Thanks Fritjof Larsson https://unix.stackexchange.com/a/639752
+    readarray -u 6 lines 6<<-CMDEOF
+$(eval $cmd)
+CMDEOF
+
 
     # No tasks found:(
     if [ ${#lines[@]} -eq 0 ]; then
