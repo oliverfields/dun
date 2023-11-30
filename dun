@@ -10,7 +10,10 @@ _error() {
 
 
 _dun_list_tags() {
-  cd "$NOTES_DIR" && grep --directories=skip --no-filename --only-matching "#[^# \"',.]\+" * | sort | uniq
+  # -h = --no-filename
+  # -s = --no-messages
+  # -o = --only-matching
+  cd "$NOTES_DIR" && grep -s -h -o "#[^# \"',.]\+" * | sort | uniq
 }
 
 
@@ -352,7 +355,10 @@ case $action in
     # Grep to find notes with no open tasks
     # sed removes filepath
     # fzf to view and select notes to archive
-    archive_candidates="$(grep "$regexp" --files-without-match --directories=skip $NOTES_DIR/* | sed "s#.*/##g")"
+    # grep
+    #   -l = --files-without-match
+    #   -s = --no-messages
+    archive_candidates="$(grep "$regexp" -l -s $NOTES_DIR/* | sed "s#.*/##g")"
 
     [ "$archive_candidates" = "" ] && exit 0
 
