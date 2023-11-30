@@ -105,16 +105,15 @@ Vim supports provides vim highlighting and dictionary completion(Ctrl+p) of both
 
 ## Bash completion
 
-Eable bash tab complete of arguments, statuses and tags by adding the following to `.bashrc`.
+To enable bash completion of arguments, statuses and tags use the suppied `_dun_bash_completion`.
+
+How this is done is distro dependent, but on Ubuntu it could be enabled by creating a symlink in the `bash-completion.d` directory.
 
 ```
-_dun() {
-  COMPREPLY=($(compgen -W "$(dun bash-complete-options)" "${COMP_WORDS[-1]}"))
-}
-complete -F _dun dun
+$ ln -s <path to dun>/_dun_bash_completion /etc/bash-completion.d/dun_completion
 ```
 
-Then `source .bashrc` or reboot to enable.
+Reboot to enable.
 
 
 ## Task statuses

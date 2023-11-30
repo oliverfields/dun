@@ -1,8 +1,6 @@
 # Notes directories
 #NOTES_DIR=~/dun
 #ARCHIVE_DIR=~/dun/archive
-# Use scratchpad for random tasks
-#SCRATCHPAD=~/dun/scratchpad
 
 
 # There are three categories of status (todo, block and done). Each category can have multiple statuses.
@@ -43,9 +41,9 @@
 #   exec printf('source %s', g:dun_vimrc)
 # endif
 #
-#VIM_SUPPORT='enabled'
+#VIM_SUPPORT=enabled
 
-# Vim highlight groups
+# Vim highlight groups, optional
 #VIM_STATUSES_TODO_STYLE='ctermbg=darkblue ctermfg=white cterm=bold'
 #VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
 #VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'

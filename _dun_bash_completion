@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# https://stackoverflow.com/questions/1146098/properly-handling-spaces-and-quotes-in-bash-completion
+_dun_notes ()
+{
+  compopt -o filenames
+
+  NOTES_DIR="$(grep '^NOTES_DIR=' "$HOME/.config/dun.conf")"
+  NOTES_DIR="${NOTES_DIR#NOTES_DIR=}"
+  NOTES_DIR="${NOTES_DIR/\~/$HOME}"
+  NOTES_DIR="${NOTES_DIR/\$HOME/$HOME}"
+
+  local IFS=$'\n'
+  local prefix="${NOTES_DIR:-$HOME/dun/}"
+  prefix="${prefix%/}/"
+  local cur=${COMP_WORDS[COMP_CWORD]}
+  local items=($(compgen -f $prefix$cur))
+
+  for item in "${items[@]}"; do
+
+    local name="${item#$prefix}"
+
+    # Skip hidden files
+    [ "${name:0:1}" = "." ] && continue
+
+    if [ -d "$item" ]; then
+      COMPREPLY+=("$name/")
+    else
+      COMPREPLY+=("$name")
+    fi
+  done
+
+  # Disable space to end if COMPREPLY option is a directory
+  [[ -d "$item" ]] && compopt -o nospace
+}
+
+
+command -v dun &> /dev/null &&
+_dun_complete()
+{
+  local cur prev
+
+  COMPREPLY=()
+  mode=${COMP_WORDS[1]}
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  if [ $COMP_CWORD -eq 1 ]; then
+    COMPREPLY=( $(compgen -W "archive-notes new-note notes recent-notes tasks" -- $cur) )
+    _dun_notes
+  elif [ $COMP_CWORD -gt 1 ]; then
+    case $mode in
+      tasks)
+        COMPREPLY=($(compgen -W "$(dun task-complete-options)" -- $cur))
+      ;;
+    esac
+  fi
+} &&
+complete -F _dun_complete dun
+

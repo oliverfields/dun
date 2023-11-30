@@ -162,7 +162,7 @@ _dun_edit_lines() {
 
 
 _dun_usage() {
-  printf "\e[1mUsage\e[0m dun [%s]\n" "$(echo -n "${DUN_ARGUMENTS[@]}" | tr ' ' '|')"
+  printf "\e[1mUsage\e[0m dun [archive-notes|new-note|notes|recent-notes|tasks|help|task-complete-options|colorize] <note file>\n"
 }
 
 _dun_print_help() {
@@ -180,16 +180,10 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
                 File name will be yyyy-mm-dd-retrospective-0 (if the file already exists the -0 will increment until the file name is unique)
 
     \e[1mnotes\e[0m
-        Search notes
-
-    \e[1mopen-last-note\e[0m
-        Open most recently modified note
+        List and filter note files
 
     \e[1mrecent-notes\e[0m [NUMBER]
         List the first Number of recently modified note files. Number defaults to 9.
-
-    \e[1mscratchpad\e[0m
-        Open note file defined by config setting SCRATCHPAD
 
     \e[1mtasks\e[0m [[+|-]<FILTER STRING>..]
         List and filter tasks, if dun is run with no arguments it defaults to showing tasks. Default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
@@ -204,8 +198,8 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     \e[1mcolorize\e[0m
         Colorize stdin
 
-    \e[1mbash-complete-options\e[0m
-        Print options for use with bash complete
+    \e[1mtask-complete-options\e[0m
+        Print statuses and tags found in notes, for use with bash complete
 
     \e[1mhelp\e[0m
         This text.
@@ -274,7 +268,6 @@ _dun_check_dependencies vim fzf grep awk
 # Settings defaults
 NOTES_DIR=~/dun
 ARCHIVE_DIR=~/dun/archive
-SCRATCHPAD=~/dun/scratchpad
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
 STATUSES_DONE=('WONT' 'DONE')
@@ -303,7 +296,6 @@ NO_STYLE=$(printf '\033[0m')
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
 DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
-DUN_ARGUMENTS=("archive-notes" "last-note" "new-note" "notes" "open-last-note" "recent-notes" "scratchpad" "tasks" "help" "bash-complete-options" "colorize")
 
 # Create notes dir if it doesn't exist
 if [ -d "$NOTES_DIR" ]; then
@@ -325,14 +317,14 @@ else
 fi
 
 case $action in
-  help|bash-complete-options|colorize) : ;; # Don't sync git
+  help|task-complete-options|colorize) : ;; # Don't sync git
   *) _git_sync pull ;;
 esac
 
 case $action in
   help)
      _dun_print_help
-     ;;
+   ;;
 
   archive-notes)
     # Move notes that have no tasks or only tasks that are done to archive directory
@@ -371,7 +363,7 @@ case $action in
       echo -e "Archived ${f##*/}"
     done
 
-    ;;
+  ;;
 
   notes)
     # Search notes dir using fzf and open selection in editor
@@ -386,7 +378,7 @@ case $action in
 
       [ -e "$f" ] && _dun_open_editor "$f"
     done
-    ;;
+  ;;
 
   new-note)
     # Create new file in NOTES_DIR
@@ -408,7 +400,7 @@ case $action in
 
     _dun_open_editor "$new_file"
 
-    ;;
+  ;;
 
   recent-notes)
     #Select to open one of X recently modified files from NOTES_DIR or open the last modified note
@@ -423,15 +415,7 @@ case $action in
     # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
     _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
 
-    ;;
-
-  open-last-note)
-    # Open the most recently modified note
-
-    last_modified="$(find . -maxdepth 1 -not -path '*/.*' -type f -printf '%T@ %p\n' | sort -k1,1nr | head -1 | sed 's_.*\./__')"
-    [ -f "$last_modified" ] && _dun_open_editor "$last_modified" 0
-
-    ;;
+  ;;
 
   tasks)
     # List tasks filtered by +<word> -<word>
@@ -473,13 +457,10 @@ case $action in
     note_files="$(find . -maxdepth 1 -not -path '*/.*' -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
 
     _dun_edit_lines "Tasks, filters$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files | sort"
-    ;;
+  ;;
 
-  bash-complete-options)
+  task-complete-options)
     # Print bash complete options
-
-    options="archive-notes colorize tasks notes new-note open-last-note recent-notes scratchpad tags bash-complete-options help"
-    options="${DUN_ARGUMENTS[@]}"
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
@@ -490,27 +471,30 @@ case $action in
     done
 
     echo "$options" | tr -d '\n'
-    ;;
+  ;;
 
   tags)
     _dun_list_tags | column -c $(tput cols) | column -t
-    ;;
+  ;;
 
   colorize)
     _dun_colorize
-    ;;
-  scratchpad)
-    _dun_open_editor "$SCRATCHPAD"
-    ;;
+  ;;
+
   *)
-    echo "Unknown argument: $1"
-    _dun_usage
-    exit 1
-    ;;
+    if [ -f "$1" ]; then
+      _dun_open_editor "$1"
+    else
+      echo "Unknown argument: $1"
+      _dun_usage
+      exit 1
+    fi
+  ;;
+
 esac
 
 case $action in
-  help|bash-complete-options|colorize) : ;; # Don't sync git
+  help|task-complete-options|colorize) : ;; # Don't sync git
   *) _git_sync commitpush ;;
 esac
 
