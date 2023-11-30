@@ -366,7 +366,13 @@ case $action in
     # grep
     #   -L = --files-without-match
     #   -s = --no-messages
-    archive_candidates="$(grep "$regexp" -L -s -d skip $NOTES_DIR/* | sed "s#.*/##g")"
+    archive_candidates="$(
+      {
+        for item in $NOTES_DIR/*; do
+          [ -f "$item" ] && grep "$regexp" -L -s "$item"
+        done
+      } | sed "s#.*/##g"
+    )"
 
     [ "$archive_candidates" = "" ] && exit 0
 
