@@ -105,6 +105,11 @@ Vim supports provides:
     exec printf('source %s', g:dun_vimrc)
   endif
   ```
+3. If the notes directory is also a git repository, add the following to `.gitignore`
+  ```
+  .dun_vim_dictionary
+  .dun_vimrc
+  ```
 
 
 ## Bash completion
