@@ -83,23 +83,19 @@ func DunReplaceStatus(id, result)
 endfunc
 
 func! DunChangeStatus()
-  if has(\"popupwin\")
-    call popup_create(g:status_list, #{
-      \ line: 'cursor+1',
-      \ col: 'cursor+1',
-      \"\ zindex: 200,
-      \"\ drag: 1,
-      \"\ wrap: 0,
-      \"\ border: [],
-      \ cursorline: 1,
-      \ padding: [0,1,0,1],
-      \ filter: 'popup_filter_menu',
-      \ mapping: 0,
-      \ callback: 'DunReplaceStatus',
-    \ })
-  else
-    call DunReplaceStatus(1, \"${STATUSES_DONE[0]}\")
-  endif
+  call popup_create(g:status_list, #{
+    \ line: 'cursor+1',
+    \ col: 'cursor+1',
+    \"\ zindex: 200,
+    \"\ drag: 1,
+    \"\ wrap: 0,
+    \"\ border: [],
+    \ cursorline: 1,
+    \ padding: [0,1,0,1],
+    \ filter: 'popup_filter_menu',
+    \ mapping: 0,
+    \ callback: 'DunReplaceStatus',
+  \ })
 endfunc
 
 let g:status_list = [ $all_statuses_list ]
