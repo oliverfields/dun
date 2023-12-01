@@ -127,7 +127,7 @@ Reboot, source or restart to enable.
 
 ## Task statuses
 
-Dun uses three status categories. Each category may have one or more user configurable statuses.
+Dun uses three status categories. Each category must have at least one, or more, statuses configured. The first status defined for each category is considered the default status.
 
 1. TODO statuses are considered in progress/need work
 2. BLOCK statuses indicate the task cannot proceed
@@ -137,5 +137,5 @@ Default statuses are:
 
 - TODO statuses: TODO
 - BLOCK statuses: WAIT
-- DONE statuses: WONT and DONE
+- DONE statuses: DONE and WONT
 
