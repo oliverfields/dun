@@ -100,7 +100,7 @@ endfunc
 
 let g:status_list = [ $all_statuses_list ]
 
-nnoremap <C-s> :call DunChangeStatus()<CR>
+nnoremap ds :call DunChangeStatus()<CR>
 "
 
 }
