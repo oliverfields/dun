@@ -4,6 +4,7 @@
 
 
 # There are three categories of status (todo, block and done). Each category can have multiple statuses.
+# Can use += to add statuses and keep default ones, e.g STATUSES_DONE+=(DUPLICATE)
 # Default status is first status defined in STATUSES_TODO
 #STATUSES_TODO=('TODO')
 #STATUSES_BLOCK=('WAIT')

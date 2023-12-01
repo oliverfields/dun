@@ -48,8 +48,8 @@ Configured editor opens note, add some text and some tasks then and close.
 ```
 Hello world:)
 
-- Call boss TODO
-- TODO Review X
+TODO Call boss
+TODO Review X
 ```
 
 View all open tasks from all note files.
@@ -91,7 +91,11 @@ Support for syntax highlighting in other editors is not implemented.
 
 ## Vim support
 
-Vim supports provides vim highlighting and dictionary completion(Ctrl+p) of both statuses and tags.
+Vim supports provides:
+
+- vim highlighting of statuses and tags
+- Ctrl+s to set status of current line from list
+- Dictionary completion(Ctrl+p) of both statuses and tags
 
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
@@ -113,7 +117,7 @@ How this is done is distro dependent, but on Ubuntu it could be enabled by creat
 $ ln -s <path to dun>/_dun_bash_completion /etc/bash-completion.d/dun_completion
 ```
 
-Reboot to enable.
+Reboot, source or restart to enable.
 
 
 ## Task statuses
