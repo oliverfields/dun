@@ -74,28 +74,33 @@ highlight dunTAG $VIM_TAG_STYLE
   all_statuses_regexp="\(${all_statuses_regexp%\\|}\)"
   all_statuses_list="${all_statuses_list%,}"
 
+  # This is brittle and tricky, but if vim screen too small, popup will not show, in this case we want to just set status to first done status. This is dependent on items in list.
+  let "default_done_status_position=${#STATUSES_TODO[@]}+${#STATUSES_BLOCK[@]}+1"
+
   echo "
 func DunReplaceStatus(id, result)
-  if a:result > -1
+  if a:result != -1
     let new_status = get(g:status_list, a:result-1, '')
     execute 's/$all_statuses_regexp/'.new_status.'/'
   endif
 endfunc
 
 func! DunChangeStatus()
-  call popup_create(g:status_list, #{
-    \ line: 'cursor+1',
-    \ col: 'cursor+1',
-    \"\ zindex: 200,
-    \"\ drag: 1,
-    \"\ wrap: 0,
-    \"\ border: [],
-    \ cursorline: 1,
-    \ padding: [0,1,0,1],
-    \ filter: 'popup_filter_menu',
-    \ mapping: 0,
-    \ callback: 'DunReplaceStatus',
-  \ })
+  \" If small window, place popup at start of line
+  if winwidth(0) < 50
+    call DunReplaceStatus(0, $default_done_status_position)
+  else
+    call popup_create(g:status_list, #{
+      \ title: 'Set status:',
+      \ line: 'cursor+1',
+      \ col: 'cursor+1',
+      \ cursorline: 1,
+      \ padding: [0,1,0,1],
+      \ filter: 'popup_filter_menu',
+      \ mapping: 0,
+      \ callback: 'DunReplaceStatus',
+    \ })
+  endif
 endfunc
 
 let g:status_list = [ $all_statuses_list ]
@@ -325,7 +330,7 @@ NOTES_DIR=~/dun
 ARCHIVE_DIR=~/dun/archive
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
-STATUSES_DONE=('WONT' 'DONE')
+STATUSES_DONE=('DONE' 'WONT')
 STATUSES_TODO_STYLE='[1;37;44m'
 STATUSES_BLOCK_STYLE='[1;37;43m'
 STATUSES_DONE_STYLE='[1;37;42m'
