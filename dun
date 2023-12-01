@@ -76,26 +76,30 @@ highlight dunTAG $VIM_TAG_STYLE
 
   echo "
 func DunReplaceStatus(id, result)
-  if a:result > 0
+  if a:result > -1
     let new_status = get(g:status_list, a:result-1, '')
     execute 's/$all_statuses_regexp/'.new_status.'/'
   endif
 endfunc
 
 func! DunChangeStatus()
-  call popup_create(g:status_list, #{
-    \ line: 'cursor+1',
-    \ col: 'cursor+1',
-    \"\ zindex: 200,
-    \"\ drag: 1,
-    \"\ wrap: 0,
-    \"\ border: [],
-    \ cursorline: 1,
-    \ padding: [0,1,0,1],
-    \ filter: 'popup_filter_menu',
-    \ mapping: 0,
-    \ callback: 'DunReplaceStatus',
-  \ })
+  if has(\"popupwin\")
+    call popup_create(g:status_list, #{
+      \ line: 'cursor+1',
+      \ col: 'cursor+1',
+      \"\ zindex: 200,
+      \"\ drag: 1,
+      \"\ wrap: 0,
+      \"\ border: [],
+      \ cursorline: 1,
+      \ padding: [0,1,0,1],
+      \ filter: 'popup_filter_menu',
+      \ mapping: 0,
+      \ callback: 'DunReplaceStatus',
+    \ })
+  else
+    call DunReplaceStatus(1, \"${STATUSES_DONE[0]}\")
+  endif
 endfunc
 
 let g:status_list = [ $all_statuses_list ]
