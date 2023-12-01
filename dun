@@ -216,7 +216,7 @@ CMDEOF
 
       _dun_open_editor "${selected_file[0]}" "${selected_file[1]}"
     else
-      exit 0
+      return
     fi
   done
 }
@@ -446,7 +446,7 @@ case $action in
 
       #| fzf --exact --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
       # Exit cleanly if no selection was made in fzf
-      [ $? -eq 130 ] && exit 0
+      [ $? -eq 130 ] && break
 
       [ -e "$f" ] && _dun_open_editor "$f"
     done
