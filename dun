@@ -82,6 +82,7 @@ func DunReplaceStatus(id, result)
   if a:result != -1
     let new_status = get(g:status_list, a:result-1, '')
     execute 's/$all_statuses_regexp/'.new_status.'/'
+    echomsg 'Status changed to '.new_status.' for task on line '.line('.')
   endif
 endfunc
 
