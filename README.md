@@ -94,7 +94,7 @@ Support for syntax highlighting in other editors is not implemented.
 Vim supports provides:
 
 - vim highlighting of statuses and tags
-- Ctrl+s to set status of current line from list
+- Key binding ds (type in quick succession) to set status of current line from popup list
 - Dictionary completion(Ctrl+p) of both statuses and tags
 
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
