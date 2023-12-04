@@ -10,10 +10,11 @@ _error() {
 
 
 _dun_list_tags() {
-  # -h = --no-filename
+  # -R = recursive
   # -s = --no-messages
+  # -h = --no-filename
   # -o = --only-matching
-  cd "$NOTES_DIR" && grep -s -h -o "#[^# \"',.]\+" * | sort | uniq
+  cd "$NOTES_DIR" && grep -R -s -h -o "#[^# \"',.]\+" * | sort | uniq
 }
 
 
@@ -531,10 +532,12 @@ case $action in
 
     # tags and statuses start either with a - or +|
     statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}" "${STATUSES_DONE[@]}")
-    #readarray tags < <(_dun_list_tags)
-    readarray -u 6 tags 6<<-CMDEOF
-_dun_list_tags
-CMDEOF
+
+    tags=()
+    for t in $(_dun_list_tags); do
+      [ "$t" = "" ] || tags+=("$t")
+    done
+
     filters=("${statuses[@]}" "${tags[@]}")
     for ((i=0;i<${#filters[@]};i++)); do
       options="$options +${filters[$i]} -${filters[$i]}"
