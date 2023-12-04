@@ -202,7 +202,7 @@ CMDEOF
       line_number="${line[1]}"
       line_text="$(echo "${line[2]}" | sed 's/^[ \t]*// ; s/^-// ; s/^[ \t]*//')"
 
-      printf "%s:%s (%s)\n" "$i" "$line_text" "$filename"
+      printf "%s:%s %s\n" "$i" "$filename" "$line_text"
 
     done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
     #done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
@@ -233,18 +233,18 @@ Task tracking from freeform notes. Tasks are single lines of text containing a s
     \e[1marchive-notes\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
 
-    \e[1mnew-note\e[0m [NAME STRING]
-        Create new note text file in NOTES_DIR. If Name is specified the file name will be  yyyy-mm-dd-[name]-[increment], else just yyyy-mm-dd-[increment].
+    \e[1mnew-note\e[0m <NAME STRING>
+        Create new note text file in NOTES_DIR. 
 
         \e[1mExample:\e[0m
             $ dun new retrospective
-                File name will be yyyy-mm-dd-retrospective-0 (if the file already exists the -0 will increment until the file name is unique)
+                File name will be retrospective (if the file name will have suffix -1, suffix will increment until the file name is unique)
 
     \e[1mnotes\e[0m
         List and filter note files
 
     \e[1mrecent-notes\e[0m [NUMBER]
-        List the first Number of recently modified note files. Number defaults to 9.
+        List the note ordered by modification date. NUMBER specifies how many notes to include in list, default is 9
 
     \e[1mtasks\e[0m [[+|-]<FILTER STRING>..]
         List and filter tasks, if dun is run with no arguments it defaults to showing tasks. Default list tasks with first status defined in TODO BLOCK (see dun.conf). Filter strings are prefixed by either + or -. Prefix + will match if the string is present, whilst prefix - means the string must be absent.
@@ -328,7 +328,6 @@ _dun_check_dependencies vim fzf grep awk
 
 # Settings defaults
 NOTES_DIR=~/dun
-ARCHIVE_DIR=~/dun/archive
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
 STATUSES_DONE=('DONE' 'WONT')
@@ -388,18 +387,7 @@ case $action in
    ;;
 
   archive-notes)
-    # Move notes that have no tasks or only tasks that are done to archive directory
-
-    # Create archive dir if it doesn't exist
-    if [ ! -d "$ARCHIVE_DIR" ]; then
-      echo -e "$ARCHIVE_DIR does not exist (change ARCHIVE_DIR in dun.conf for another location), type \e${HIGHLIGHT_STYLE}[c]\e[0m to create or \e${HIGHLIGHT_STYLE}anything else\e[0m to exit"
-      read selection
-      if [ "$selection" = "c" ]; then
-        mkdir -p "$ARCHIVE_DIR"
-      else
-        exit 0
-      fi 
-    fi
+    # Archiving means making file hidden
 
     # Tasks statuses that still have work pending
     live_statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}")
@@ -410,6 +398,8 @@ case $action in
     done
     regexp="${regexp:2}"
 
+    cd "$NOTES_DIR"
+
     # Grep to find notes with no open tasks
     # sed removes filepath
     # fzf to view and select notes to archive
@@ -418,10 +408,10 @@ case $action in
     #   -s = --no-messages
     archive_candidates="$(
       {
-        for item in $NOTES_DIR/*; do
+        for item in $(find "$NOTES_DIR" -not -path '*/.*' -type f); do
           [ -f "$item" ] && grep "$regexp" -L -s "$item"
         done
-      } | sed "s#.*/##g"
+      } | sed "s#^$NOTES_DIR/##"
     )"
 
     [ "$archive_candidates" = "" ] && exit 0
@@ -430,8 +420,12 @@ case $action in
     echo "$archive_candidates" \
     | fzf --exact --multi --cycle "--header=Archive notes containing no open tasks. Tab to select multiple" \
     | while read f; do
-      mv "$NOTES_DIR/$f" "$ARCHIVE_DIR/."
-      echo -e "Archived ${f##*/}"
+      # Hide file
+      filename="${f##*/}"
+      dirname="${f%/*}"
+      archive_file="$NOTES_DIR/$dirname/.$filename"
+      mv "$NOTES_DIR/$f" "$archive_file"
+      echo -e "Archived $archive_file"
     done
 
   ;;
@@ -454,24 +448,25 @@ case $action in
 
   new-note)
     # Create new file in NOTES_DIR
-    num=0
 
     if [ $# -eq 2 ]; then
-      note_name=-$2
+      note_name=$2
     else
-      note_name=''
+      note_name='note'
     fi
 
-    new_file="$NOTES_DIR/$(date +%Y%m%d)$note_name"
+    new_file="$NOTES_DIR/$note_name"
 
-    while [ -e "${new_file}-$num" ]; do
-      num=$((num +1))
-    done
-
-    new_file="${new_file}-$num"
+    # If file exists find a uniq integer suffix
+    if [ -e "$new_file" ]; then
+      num=1
+      while [ -e "${new_file}-$num" ]; do
+        num=$((num +1))
+      done
+      new_file="${new_file}-$num"
+    fi
 
     _dun_open_editor "$new_file"
-
   ;;
 
   recent-notes)
@@ -485,7 +480,7 @@ case $action in
 
     # find just files in NOTES_DIR and get their epoch and date stamp, sort (because epoch is first)
     # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
-    _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -maxdepth 1 -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
+    _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
 
   ;;
 
@@ -526,7 +521,7 @@ case $action in
     awk_filter="${awk_filter:4}" # Remove first '&& '
     # Create list of the note files, use instead of * to ensure only files and that quoteing is correct
     # The -not -path ignores dot/hidden files
-    note_files="$(find . -maxdepth 1 -not -path '*/.*' -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
+    note_files="$(find . -not -path '*/.*' -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
 
     _dun_edit_lines "Tasks, filters$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files | sort"
   ;;

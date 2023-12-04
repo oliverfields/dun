@@ -18,15 +18,17 @@ _dun_notes ()
 
   for item in "${items[@]}"; do
 
-    local name="${item#$prefix}"
+    local item_name="${item#$prefix}"
+    # Remove path, so left with just directory or file name
+    name="${item_name##*/}"
 
     # Skip hidden files
     [ "${name:0:1}" = "." ] && continue
 
     if [ -d "$item" ]; then
-      COMPREPLY+=("$name/")
+      COMPREPLY+=("$item_name/")
     else
-      COMPREPLY+=("$name")
+      COMPREPLY+=("${item_name}")
     fi
   done
 
@@ -48,11 +50,10 @@ _dun_complete()
   if [ $COMP_CWORD -eq 1 ]; then
     COMPREPLY=( $(compgen -W "archive-notes new-note notes recent-notes tasks" -- $cur) )
     _dun_notes
-  elif [ $COMP_CWORD -gt 1 ]; then
+  elif [ $COMP_CWORD -eq 2 ]; then
     case $mode in
-      tasks)
-        COMPREPLY=($(compgen -W "$(dun task-complete-options)" -- $cur))
-      ;;
+      tasks) COMPREPLY=($(compgen -W "$(dun task-complete-options)" -- $cur)) ;;
+      new-note) _dun_notes ;;
     esac
   fi
 } &&

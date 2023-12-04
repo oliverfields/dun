@@ -100,7 +100,7 @@ Vim supports provides:
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
   ```
-  let g:dun_vimrc = expand('%:p:h') . '/.dun_vimrc'
+  let g:dun_vimrc = $HOME.'/notes/.dun_vimrc'
   if filereadable(dun_vimrc)
     exec printf('source %s', g:dun_vimrc)
   endif
