@@ -32,7 +32,7 @@ ln -s <path to cloned repo>/dun ~/.local/bin/dun
 ```
 
 > **Warning**
-> Dun requires that [fzf](https://github.com/junegunn/fzf) is installed
+> Dun requires that [fzy](https://github.com/jhawthorn/fzy) is installed
 
 
 ## Getting started
