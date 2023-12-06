@@ -160,67 +160,38 @@ _dun_colorize() {
   sed -r "\
 # Colorizes output:
 # Todo statuses
-s/$TODOS/${ESC}${STATUSES_TODO_STYLE}&${NO_STYLE}/g \
+s/$TODOS/${ESC}${STATUSES_TODO_STYLE}&${ESC}${NORMAL_STYLE}/ \
 # Block statuses
-; s/$BLOCKS/${ESC}${STATUSES_BLOCK_STYLE}&${NO_STYLE}/g \
+; s/$BLOCKS/${ESC}${STATUSES_BLOCK_STYLE}&${ESC}${NORMAL_STYLE}/ \
 # Done statuses
-; s/$DONES/${ESC}${STATUSES_DONE_STYLE}&${NO_STYLE}/g \
+; s/$DONES/${ESC}${STATUSES_DONE_STYLE}&${ESC}${NORMAL_STYLE}/ \
 # Tags
-; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${NO_STYLE}/g \
-# File names 
-; s/^[^# \"',]+/${ESC}${FILE_STYLE}&${NO_STYLE}/g \
+; s/#[^# \"']+/${ESC}${TAGS_STYLE}&${ESC}${NORMAL_STYLE}/g \
 " -
 }
 
 
 _dun_edit_lines() {
-  # Accepts a title and command that will list tasks (lines in note files) and allows user to select a line and open it in editor repeatedly
-  # $1 argument is the command that when evaluated must produce output in format <filename>:<line number>:<line text>
+  # Accepts a single command that when evaluated must produce output in format <filename>:<line number>:<line text>
 
-  local title="$1"
-  local cmd="$2"
+  local cmd="$1"
 
   # The loop evaluates the command argument and allows user to select a line to edit
   while true; do
     # Read result of command (must be in correct format, see above)
 
-    # Process substitution is sooo much nicer, but this has to work on ish
-    #readarray -u 0 lines < <(eval $cmd)
-    # Thanks Fritjof Larsson https://unix.stackexchange.com/a/639752
-    readarray -u 6 lines 6<<-CMDEOF
-$(eval $cmd)
-CMDEOF
+    selection="$(eval $cmd | _dun_colorize | fzy)"
 
-
-    # No tasks found:(
-    if [ ${#lines[@]} -eq 0 ]; then
-      exit 1
-    fi
-
-    title_string="$(printf "%s" "$title")"
-
-    selection="$(for ((i=0;i<${#lines[@]};i++)); do
-      IFS=':' read -r -a line <<< "${lines[$i]}"
+    if [ "$selection" != "" ]; then
+      IFS=':' read -r -a line <<< "$selection"
       filename="${line[0]}"
       line_number="${line[1]}"
-      line_text="$(echo "${line[2]}" | sed 's/^[ \t]*// ; s/^-// ; s/^[ \t]*//')"
 
-      printf "%s:%s %s\n" "$i" "$filename" "$line_text"
-
-    done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string")"
-    #done | _dun_colorize | fzf --exact --ansi --delimiter=':' --with-nth 2.. --cycle "--header=$title_string. Shift+[up|down] to scroll preview" '--preview=echo {} | sed "s/^[0-9]*://" | dun colorize' --bind shift-up:preview-page-up,shift-down:preview-page-down --preview-window up,3,wrap)"
-
-    # Strip off task content, leaving only array index to $lines
-    selection=${selection//:*}
-
-    # Open selected file at given location in editor
-    if [ "$selection" -le ${#lines[@]} ] 2>/dev/null ; then
-      IFS=':' read -ra selected_file <<< ${lines[$selection]}
-
-      _dun_open_editor "${selected_file[0]}" "${selected_file[1]}"
+      _dun_open_editor "$filename" "$line_number"
     else
       return
     fi
+
   done
 }
 
@@ -327,23 +298,21 @@ _git_sync() {
 }
 
 
-_dun_check_dependencies vim fzf grep awk
+_dun_check_dependencies vim fzy grep awk
 
 # Settings defaults
 NOTES_DIR=~/dun
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
 STATUSES_DONE=('DONE' 'WONT')
-STATUSES_TODO_STYLE='[1;37;44m'
-STATUSES_BLOCK_STYLE='[1;37;43m'
-STATUSES_DONE_STYLE='[1;37;42m'
-HIGHLIGHT_STYLE='[0;35m'
-TAGS_STYLE='[1;37;46m'
-FILE_STYLE='[0;32m'
-VIM_STATUSES_TODO_STYLE='ctermbg=darkblue ctermfg=white cterm=bold'
-VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
-VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'
-VIM_TAG_STYLE='ctermbg=darkcyan ctermfg=white cterm=bold'
+STATUSES_TODO_STYLE='[34m'
+STATUSES_BLOCK_STYLE='[31m'
+STATUSES_DONE_STYLE='[32m'
+TAGS_STYLE='[35m'
+VIM_STATUSES_TODO_STYLE='ctermfg=4'
+VIM_STATUSES_BLOCK_STYLE='ctermfg=5'
+VIM_STATUSES_DONE_STYLE='ctermfg=2'
+VIM_TAG_STYLE='ctermfg=1'
 VIM_SUPPORT='disabled'
 GIT_SYNC='disabled'
 
@@ -355,7 +324,8 @@ fi
 
 # Setup globals
 ESC=$(printf '\033')
-NO_STYLE=$(printf '\033[0m')
+NORMAL_STYLE='[37m'
+DEFAULT_STYLE='[0;37m'
 
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
@@ -365,7 +335,7 @@ DONES="$(_dun_regexp_statuses "${STATUSES_DONE[@]}")"
 if [ -d "$NOTES_DIR" ]; then
   cd "$NOTES_DIR"
 else
-  echo -e "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location), type \e${HIGHLIGHT_STYLE}[c]\e[0m to create or \e${HIGHLIGHT_STYLE}anything else\e[0m to exit"
+  echo -e "$NOTES_DIR does not exist (change NOTES_DIR in dun.conf for another location), type [c] to create or anything else to exit"
   read selection
   if [ "$selection" = "c" ]; then
     mkdir -p "$NOTES_DIR"
@@ -393,58 +363,70 @@ case $action in
   archive-notes)
     # Archiving means making file hidden
 
-    # Tasks statuses that still have work pending
-    live_statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}")
-    regexp=''
+    while true; do
+      # List notes that have no TODO or WAIT status tasks
+      # Tasks statuses that still have work pending
+      live_statuses=("${STATUSES_TODO[@]}" "${STATUSES_BLOCK[@]}")
+      regexp=''
 
-    for s in ${live_statuses[@]}; do
-      regexp="$regexp\|$s"
+      for s in ${live_statuses[@]}; do
+        regexp="$regexp\|$s"
+      done
+      regexp="${regexp:2}"
+
+      # Grep to find notes with no open tasks
+      # sed removes filepath
+      # fzy to view and select notes to archive
+      # grep
+      #   -L = --files-without-match
+      #   -s = --no-messages
+      archive_candidates="$(
+        {
+          for item in $(find "$NOTES_DIR" -not -path '*/.*' -type f); do
+            [ -f "$item" ] && grep "$regexp" -L -s "$item"
+          done
+        } | sed "s#^$NOTES_DIR/##"
+      )"
+
+      [ "$archive_candidates" = "" ] && break
+
+      candidate="$(echo "$archive_candidates" | fzy)"
+
+      [ "$candidate" = "" ] && break
+
+      candidate_abs_path="$NOTES_DIR/$candidate"
+
+      # Option to view, arvhive or go back
+      while true; do
+        action="$(echo -e "View $candidate\nArchive $candidate" | fzy)"
+        [ "$action" = "" ] && break
+
+        case $action in
+          View*) _dun_open_editor "$candidate" ;;
+          Archive*)
+            # Hide file
+            filename="${candidate_abs_path##*/}"
+            dirname="${candidate_abs_path%/*}"
+            archive_file="$dirname/.$filename"
+            mv "$candidate_abs_path" "$archive_file"
+            echo -e "Archived as $archive_file"
+            break
+          ;;
+        esac
+      done
     done
-    regexp="${regexp:2}"
-
-    cd "$NOTES_DIR"
-
-    # Grep to find notes with no open tasks
-    # sed removes filepath
-    # fzf to view and select notes to archive
-    # grep
-    #   -L = --files-without-match
-    #   -s = --no-messages
-    archive_candidates="$(
-      {
-        for item in $(find "$NOTES_DIR" -not -path '*/.*' -type f); do
-          [ -f "$item" ] && grep "$regexp" -L -s "$item"
-        done
-      } | sed "s#^$NOTES_DIR/##"
-    )"
-
-    [ "$archive_candidates" = "" ] && exit 0
-
-    #| fzf --exact --multi --cycle "--header=Archive notes. Tab to select multiple, shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down \
-    echo "$archive_candidates" \
-    | fzf --exact --multi --cycle "--header=Archive notes containing no open tasks. Tab to select multiple" \
-    | while read f; do
-      # Hide file
-      filename="${f##*/}"
-      dirname="${f%/*}"
-      archive_file="$NOTES_DIR/$dirname/.$filename"
-      mv "$NOTES_DIR/$f" "$archive_file"
-      echo -e "Archived $archive_file"
-    done
-
   ;;
 
   notes)
-    # Search notes dir using fzf and open selection in editor
+    # Search notes dir, select note and open selection in editor
 
     while true; do
       f="$(find "$NOTES_DIR" -not -path '*/.*' -type f \
       | sed "s#$NOTES_DIR/##g" \
-      | fzf --exact --cycle "--header=Notes")"
+      | fzy)"
 
-      #| fzf --exact --cycle "--header=Notes. Shift+[up|down] to scroll preview" --preview-window right,wrap '--preview=dun colorize < {}' --bind shift-up:preview-page-up,shift-down:preview-page-down)"
-      # Exit cleanly if no selection was made in fzf
-      [ $? -eq 130 ] && break
+      # Exit cleanly if no selection was made
+      [ "$f" = "" ] && break
 
       [ -e "$f" ] && _dun_open_editor "$f"
     done
@@ -474,18 +456,18 @@ case $action in
   ;;
 
   recent-notes)
-    #Select to open one of X recently modified files from NOTES_DIR or open the last modified note
+    # Present selection of notes listed by modification date
+    # Use awk and sed to mangle lines so they confirm to expected input
 
-    if [ "$2" != "" ]; then
-      max_count=$2
-    else
-      max_count=99
-    fi
+    while true; do
+      selection="$(LC_ALL=en_US.UTF-8 find "$NOTES_DIR" -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d:{} \; | sort --reverse | awk 'BEGIN { FS = ":" } ; { print $3":"$2 }' | sed "s#^$NOTES_DIR/##" | fzy)"
 
-    # find just files in NOTES_DIR and get their epoch and date stamp, sort (because epoch is first)
-    # returning $max_count most recent. Use awk and sed to mangle lines so they confirm to expected input
-    _dun_edit_lines "Recently modified" "LC_ALL=en_US.UTF-8 find '$NOTES_DIR' -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d\ %a\ week\ %V:{} \; | sort --reverse | head -$max_count | awk 'BEGIN { FS = \":\" } ; { print \$3 \":0:\" \$2 }' | sed 's#^$NOTES_DIR/##'"
-
+      if [ "$selection" != "" ]; then
+        _dun_open_editor "$NOTES_DIR/${selection%%:*}"
+      else
+        break
+      fi
+    done
   ;;
 
   tasks)
@@ -525,9 +507,9 @@ case $action in
     awk_filter="${awk_filter:4}" # Remove first '&& '
     # Create list of the note files, use instead of * to ensure only files and that quoteing is correct
     # The -not -path ignores dot/hidden files
-    note_files="$(find . -not -path '*/.*' -type f | sed "s/^\.\//'/ ; s/$/'/" | tr '\n' ' ')"
-
-    _dun_edit_lines "Tasks, filters$filters" "awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files | sort"
+    note_files="$(find "$NOTES_DIR" -not -path '*/.*' -type f | sed "s#^$NOTES_DIR/#'# ; s/$/'/" | tr '\n' ' ')"
+    cmd="awk '$awk_filter {print FILENAME \":\" FNR \":\" \$0}' $note_files | sort"
+    _dun_edit_lines "$cmd"
   ;;
 
   task-complete-options)

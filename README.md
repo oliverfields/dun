@@ -100,9 +100,15 @@ Vim supports provides:
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
   ```
-  let g:dun_vimrc = $HOME.'/notes/.dun_vimrc'
-  if filereadable(dun_vimrc)
-    exec printf('source %s', g:dun_vimrc)
+  " Load dun vimrc
+  let g:dun_notes_dir = $HOME.'/dun'
+  let g:dun_vimrc = g:dun_notes_dir.'/.dun_vimrc'
+  let g:current_file_path = expand('%:p:h')
+  " If current file path starts with dun_notes_dir, then load dun vimrc
+  if g:current_file_path[0:len(g:dun_notes_dir)-1] ==# g:dun_notes_dir
+    if filereadable(g:dun_vimrc)
+      exec printf('source %s', g:dun_vimrc)
+    endif
   endif
   ```
 3. If the notes directory is also a git repository, add the following to `.gitignore`

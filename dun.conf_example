@@ -13,12 +13,10 @@
 
 # Status categories can be styled using escape codes (all statuses in a given category have the same style
 # Note that the \e escape sequence must be omitted, ie use '[1m' for bold, not '\e[1m'
-#STATUSES_TODO_STYLE='[1;37;44m'
-#STATUSES_BLOCK_STYLE='[1;37;43m'
-#STATUSES_DONE_STYLE='[1;37;42m'
-#TAGS_STYLE='[1;37;46m'
-#HIGHLIGHT_STYLE='[0;35m'
-
+#STATUSES_TODO_STYLE='[34m'
+#STATUSES_BLOCK_STYLE='[31m'
+#STATUSES_DONE_STYLE='[32m'
+#TAGS_STYLE='[35m'
 
 # Uncomment the function below and customize to your preferred exitor
 #_dun_open_editor() {
@@ -45,11 +43,10 @@
 #VIM_SUPPORT=enabled
 
 # Vim highlight groups, optional
-#VIM_STATUSES_TODO_STYLE='ctermbg=darkblue ctermfg=white cterm=bold'
-#VIM_STATUSES_BLOCK_STYLE='ctermbg=darkyellow ctermfg=white cterm=bold'
-#VIM_STATUSES_DONE_STYLE='ctermbg=darkgreen ctermfg=white cterm=bold'
-#VIM_TAG_STYLE='ctermbg=darkcyan ctermfg=white cterm=bold'
-
+#VIM_STATUSES_TODO_STYLE='ctermfg=4'
+#VIM_STATUSES_BLOCK_STYLE='ctermfg=5'
+#VIM_STATUSES_DONE_STYLE='ctermfg=2'
+#VIM_TAG_STYLE='ctermfg=1'
 
 # If notes directory is a git repo and this setting is enabled dun will sync changes to a remote git repository.
 #GIT_SYNC=enabled
