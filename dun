@@ -76,6 +76,7 @@ highlight dunTAG $VIM_TAG_STYLE
   all_statuses_list="${all_statuses_list%,}"
 
   # This is brittle and tricky, but if vim screen too small, popup will not show, in this case we want to just set status to first done status. This is dependent on items in list.
+  let "default_todo_status_position=0"
   let "default_done_status_position=${#STATUSES_TODO[@]}+${#STATUSES_BLOCK[@]}+1"
 
   echo "
@@ -88,7 +89,7 @@ func DunReplaceStatus(id, result)
 endfunc
 
 func! DunChangeStatus()
-  \" If small window, place popup at start of line
+  \" If small window, just set any status to default done status
   if winwidth(0) < 50
     call DunReplaceStatus(0, $default_done_status_position)
   else
@@ -105,9 +106,48 @@ func! DunChangeStatus()
   endif
 endfunc
 
+
+func DunFoldStatus(id, result)
+  if a:result != -1
+    let g:fold_status = get(g:status_list, a:result-1, '')
+echomsg 'Folding ' . g:fold_status
+    setlocal foldmethod=expr
+    setlocal foldexpr=getline(v:lnum) =~ g:fold_status
+    setlocal foldenable
+  endif
+endfunc
+
+
+func! DunToggleFoldStatus()
+  if g:fold_status_enabled == 'yes'
+echomsg 'Unfolding ' . fold_status
+    set nofoldenable
+  else
+    \" If small window, just search for default todo status
+    if winwidth(0) < 50
+      call DunSearchForStatus(0, $default_todo_status_position)
+    else
+      call popup_create(g:status_list, #{
+        \ title: 'Set status:',
+        \ line: 'cursor+1',
+        \ col: 'cursor+1',
+        \ cursorline: 1,
+        \ padding: [0,1,0,1],
+        \ filter: 'popup_filter_menu',
+        \ mapping: 0,
+        \ callback: 'DunFoldStatus',
+      \ })
+
+      g:fold_status_enable = 'no'
+    endif
+  endif
+endfunc
+
+let g:fold_status_enabled = 'no'
 let g:status_list = [ $all_statuses_list ]
 
 nnoremap ds :call DunChangeStatus()<CR>
+nnoremap df :call DunToggleFoldStatus()<CR>
 "
 
 }
@@ -326,8 +366,8 @@ fi
 ESC=$(printf '\033')
 NORMAL_STYLE='[37m'
 DEFAULT_STYLE='[0;37m'
-#FZY should take up about 2/3 of the terminal
-FZY_LINES="$(echo "--lines=$(( $(tput lines) / 3 * 2 ))")"
+#Work out how many lines fzy should show 
+FZY_LINES="$(echo "--lines=$(( $(tput lines) -2 ))")"
 
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
