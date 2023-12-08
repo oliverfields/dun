@@ -180,7 +180,7 @@ _dun_edit_lines() {
   while true; do
     # Read result of command (must be in correct format, see above)
 
-    selection="$(eval $cmd | _dun_colorize | fzy)"
+    selection="$(eval $cmd | _dun_colorize | fzy $FZY_LINES)"
 
     if [ "$selection" != "" ]; then
       IFS=':' read -r -a line <<< "$selection"
@@ -326,6 +326,8 @@ fi
 ESC=$(printf '\033')
 NORMAL_STYLE='[37m'
 DEFAULT_STYLE='[0;37m'
+#FZY should take up about 2/3 of the terminal
+FZY_LINES="$(echo "--lines=$(( $(tput lines) / 3 * 2 ))")"
 
 TODOS="$(_dun_regexp_statuses "${STATUSES_TODO[@]}")"
 BLOCKS="$(_dun_regexp_statuses "${STATUSES_BLOCK[@]}")"
@@ -390,7 +392,7 @@ case $action in
 
       [ "$archive_candidates" = "" ] && break
 
-      candidate="$(echo "$archive_candidates" | fzy)"
+      candidate="$(echo "$archive_candidates" | fzy $FZY_LINES)"
 
       [ "$candidate" = "" ] && break
 
@@ -398,7 +400,7 @@ case $action in
 
       # Option to view, arvhive or go back
       while true; do
-        action="$(echo -e "View $candidate\nArchive $candidate" | fzy)"
+        action="$(echo -e "View $candidate\nArchive $candidate" | fzy $FZY_LINES)"
         [ "$action" = "" ] && break
 
         case $action in
@@ -423,7 +425,7 @@ case $action in
     while true; do
       f="$(find "$NOTES_DIR" -not -path '*/.*' -type f \
       | sed "s#$NOTES_DIR/##g" \
-      | fzy)"
+      | fzy $FZY_LINES)"
 
       # Exit cleanly if no selection was made
       [ "$f" = "" ] && break
@@ -460,7 +462,7 @@ case $action in
     # Use awk and sed to mangle lines so they confirm to expected input
 
     while true; do
-      selection="$(LC_ALL=en_US.UTF-8 find "$NOTES_DIR" -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d:{} \; | sort --reverse | awk 'BEGIN { FS = ":" } ; { print $3":"$2 }' | sed "s#^$NOTES_DIR/##" | fzy)"
+      selection="$(LC_ALL=en_US.UTF-8 find "$NOTES_DIR" -not -path '*/.*' -type f -exec date -r {} +%s:%Y-%m-%d:{} \; | sort --reverse | awk 'BEGIN { FS = ":" } ; { print $3":"$2 }' | sed "s#^$NOTES_DIR/##" | fzy $FZY_LINES)"
 
       if [ "$selection" != "" ]; then
         _dun_open_editor "$NOTES_DIR/${selection%%:*}"
