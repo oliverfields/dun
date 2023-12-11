@@ -94,13 +94,16 @@ Support for syntax highlighting in other editors is not implemented.
 Vim supports provides:
 
 - vim highlighting of statuses and tags
-- Key binding ds (type in quick succession) to set status of current line from popup list
+- Key bindings (type in quick succession)
+    - **ds** set status of current line from popup list
+    - **df** fold lines based on status
+    - **dn** create new line with default todo status
 - Dictionary completion(Ctrl+p) of both statuses and tags
 
 1. Set `VIM_SUPPORT=enabled` in `~/.config/dun.conf`.
 2. Add the following to `~/.vimrc`, essentially it says source .dun_vimrc if it exists in the same directory as the file vim has opend.
   ```
-  " Load dun vimrc
+  " Dun vimrc
   let g:dun_notes_dir = $HOME.'/dun'
   let g:dun_vimrc = g:dun_notes_dir.'/.dun_vimrc'
   let g:current_file_path = expand('%:p:h')
@@ -110,6 +113,7 @@ Vim supports provides:
       exec printf('source %s', g:dun_vimrc)
     endif
   endif
+  " End Dun vimrc
   ```
 3. If the notes directory is also a git repository, add the following to `.gitignore`
   ```

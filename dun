@@ -57,20 +57,20 @@ highlight dunTAG $VIM_TAG_STYLE
   for s in ${STATUSES_TODO[@]}; do
     echo "call matchadd('dunTODO', '\\<$s\\>', 50)"
     all_statuses_regexp="$all_statuses_regexp$s\|"
-    all_statuses_list="$all_statuses_list\"$s\","
-    todo_statuses_list="$todo_statuses_list\"$s\","
+    all_statuses_list="$all_statuses_list'$s',"
+    todo_statuses_list="$todo_statuses_list$s\|"
   done
   for s in ${STATUSES_BLOCK[@]}; do
     echo "call matchadd('dunBLOCK', '\\<$s\\>', 50)"
     all_statuses_regexp="$all_statuses_regexp$s\|"
-    all_statuses_list="$all_statuses_list\"$s\","
-    block_statuses_list="$block_statuses_list\"$s\","
+    all_statuses_list="$all_statuses_list'$s',"
+    block_statuses_list="$block_statuses_list$s\|"
   done
   for s in ${STATUSES_DONE[@]}; do
     echo "call matchadd('dunDONE', '\\<$s\\>', 50)"
     all_statuses_regexp="$all_statuses_regexp$s\|"
-    all_statuses_list="$all_statuses_list\"$s\","
-    done_statuses_list="$done_statuses_list\"$s\","
+    all_statuses_list="$all_statuses_list'$s',"
+    done_statuses_list="$done_statuses_list$s\|"
   done
 
   # Matchadd tags
@@ -80,9 +80,9 @@ highlight dunTAG $VIM_TAG_STYLE
 
   all_statuses_regexp="\(${all_statuses_regexp%\\|}\)"
   all_statuses_list="${all_statuses_list%,}"
-  todo_statuses_list="${todo_statuses_list%,}"
-  block_statuses_list="${block_statuses_list%,}"
-  done_statuses_list="${done_statuses_list%,}"
+  todo_statuses_list="${todo_statuses_list%\\|}"
+  block_statuses_list="${block_statuses_list%\\|}"
+  done_statuses_list="${done_statuses_list%\\|}"
 
   # This is brittle and tricky, but if vim screen too small, popup will not show, in this case we want to just set status to first done status. This is dependent on items in list.
   let "default_todo_status_position=0"
@@ -118,49 +118,59 @@ endfunc
 
 func DunFoldStatus(id, result)
   if a:result != -1
-    if a:result == '0'
-      echomsg '$todo_statuses_list'
-    elseif a:result == '1'
-      echomsg '$block_statuses_list'
-    elseif a:result == '2'
-      echomsg '$done_statuses_list'
+    \" Got to escape a lot of slashes to make the execute work..
+    if a:result == '1'
+      set foldenable!
     else
-      let g:fold_status = get(g:status_fold, a:result-1, '')
-
+      set foldenable
       set foldmethod=expr
-      let g:fold_status = 'DONE|WAIT'
-      execute 'set foldexpr=getline(v:lnum)=~'''.g:fold_status.''''
+      if a:result == '2'
+        let g:fold_status='${done_statuses_list//\\/\\\\\\\\}'
+        execute 'set foldexpr=getline(v:lnum)=~''\\\('.g:fold_status.'\\\)'''
+      elseif a:result == '3'
+        let g:fold_status='${done_statuses_list//\\/\\\\\\\\}\\\\\\|${block_statuses_list//\\/\\\\\\\\}'
+        execute 'set foldexpr=getline(v:lnum)=~''\\\('.g:fold_status.'\\\)'''
+      elseif a:result == '4'
+        let g:fold_status='${block_statuses_list//\\/\\\\\\\\}'
+        execute 'set foldexpr=getline(v:lnum)=~''\\\('.g:fold_status.'\\\)'''
+      elseif a:result == '5'
+        let g:fold_status='${todo_statuses_list//\\/\\\\\\\\}'
+        execute 'set foldexpr=getline(v:lnum)=~''\\\('.g:fold_status.'\\\)'''
+      else
+        let g:fold_status=get(g:status_fold, a:result-1, '')
+        execute 'set foldexpr=getline(v:lnum)!~''\\\('.g:fold_status.'\\\)'''
+      endif
+
     endif
   endif
 endfunc
 
 
 func! DunToggleFoldStatus()
-  if &foldenable
-    \" If small window, just search for default todo status
-    if winwidth(0) < 50
-      call DunSearchForStatus(0, $default_todo_status_position)
-    else
-      call popup_create(g:status_fold, #{
-        \ title: 'Fold status:',
-        \ line: 'cursor+1',
-        \ col: 'cursor+1',
-        \ cursorline: 1,
-        \ padding: [0,1,0,1],
-        \ filter: 'popup_filter_menu',
-        \ mapping: 0,
-        \ callback: 'DunFoldStatus',
-      \ })
-    endif
+  \" If small window, just search for default todo status
+  if winwidth(0) < 50
+    \" Default to fold all done statuses
+    call DunFoldStatus(0, 1)
+  else
+    call popup_create(g:status_fold, #{
+      \ title: 'Fold statuses:',
+      \ line: 'cursor+1',
+      \ col: 'cursor+1',
+      \ cursorline: 1,
+      \ padding: [0,1,0,1],
+      \ filter: 'popup_filter_menu',
+      \ mapping: 0,
+      \ callback: 'DunFoldStatus',
+    \ })
   endif
-
 endfunc
 
 let g:status_list = [ $all_statuses_list ]
-let g:status_fold = [ \"Todo statuses\",\"Blocked statuses\",\"Done statuses\",$all_statuses_list ]
+let g:status_fold = [ 'Toggle folding','Fold done','Fold done and blocked','Fold blocked','Fold todo',$all_statuses_list ]
 
 nnoremap ds :call DunChangeStatus()<CR>
 nnoremap df :call DunToggleFoldStatus()<CR>
+nnoremap dn O${STATUSES_TODO[0]} 
 "
 
 }
