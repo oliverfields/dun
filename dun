@@ -2,6 +2,28 @@
 
 # Freeform task tracking for plain text notes
 
+conf_file="$HOME/.config/dun.conf"
+default_notes_dir="$HOME/dun"
+
+# If script is sourced, cd to notes_dir and return
+# Need to run first so shell is not "polluted" by all that sourcing this file would entail
+case ${0##*/} in
+  bash|-bash|sh|-sh)
+    NOTES_DIR="$(grep '^NOTES_DIR=' "$conf_file" | sed 's/.*=//' || echo "$default_notes_dir")"
+    # Expand home directory
+    NOTES_DIR="${NOTES_DIR/\~/$HOME}"
+    NOTES_DIR="${NOTES_DIR/\$HOME/$HOME}"
+
+    [ -d "$NOTES_DIR" ] && cd "$NOTES_DIR" || echo "Unable to cd to $NOTES_DIR"
+    # Tidy up so no variables are left in shell
+    unset NOTES_DIR
+    unset default_notes_dir
+    unset conf_file
+    # Return to stop any more being added to shell
+    return
+  ;;
+esac
+
 
 _error() {
   echo "Error: $1" 1>&2
@@ -267,6 +289,9 @@ _dun_print_help() {
   echo -e '
 Task tracking from freeform notes. Tasks are single lines of text containing a status and optionally one or more tags. Notes are plain text files.
 
+Sourcing the command will change directory to notes dir, e.g. $ . dun
+
+
     \e[1marchive-notes\e[0m
         Move notes that have no tasks, or only done tasks, to archive directory
 
@@ -314,7 +339,7 @@ _dun_check_dependencies() {
 }
 
 
-# For all git repositories in vault, run batch commands
+# For git run batch commands
 _git_sync() {
 
   local action="$1"
@@ -364,7 +389,7 @@ _git_sync() {
 _dun_check_dependencies vim fzy grep awk
 
 # Settings defaults
-NOTES_DIR=~/dun
+NOTES_DIR="$default_notes_dir"
 STATUSES_TODO=('TODO')
 STATUSES_BLOCK=('WAIT')
 STATUSES_DONE=('DONE' 'WONT')
@@ -380,7 +405,6 @@ VIM_SUPPORT='disabled'
 GIT_SYNC='disabled'
 
 # Load config file
-conf_file=~/.config/dun.conf
 if [ -f $conf_file ]; then
   source $conf_file
 fi
