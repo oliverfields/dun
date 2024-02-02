@@ -487,11 +487,15 @@ case $action in
 
       # Option to view, arvhive or go back
       while true; do
-        action="$(echo -e "View $candidate\nArchive $candidate" | fzy $FZY_LINES)"
+        action="$(echo -e "View $candidate\nArchive $candidate\nDelete $candidate" | fzy $FZY_LINES)"
         [ "$action" = "" ] && break
 
         case $action in
           View*) _dun_open_editor "$candidate" ;;
+          Delete*)
+            rm "$candidate"
+            break
+          ;;
           Archive*)
             # Hide file
             filename="${candidate_abs_path##*/}"
