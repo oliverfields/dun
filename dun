@@ -339,6 +339,22 @@ _dun_check_dependencies() {
 }
 
 
+_dun_new_file_name() {
+  new_file="$NOTES_DIR/$1"
+
+  # If file exists find a uniq integer suffix
+  if [ -e "$new_file" ]; then
+    num=1
+    while [ -e "${new_file}-$num" ]; do
+      num=$((num +1))
+    done
+    new_file="${new_file}-$num"
+  fi
+
+  echo "$new_file"
+}
+
+
 # For git run batch commands
 _git_sync() {
 
@@ -534,18 +550,9 @@ case $action in
       note_name='note'
     fi
 
-    new_file="$NOTES_DIR/$note_name"
+    note_name="$(_dun_new_file_name "$note_name")"
 
-    # If file exists find a uniq integer suffix
-    if [ -e "$new_file" ]; then
-      num=1
-      while [ -e "${new_file}-$num" ]; do
-        num=$((num +1))
-      done
-      new_file="${new_file}-$num"
-    fi
-
-    _dun_open_editor "$new_file"
+    _dun_open_editor "$note_name"
   ;;
 
   recent-notes)
@@ -637,10 +644,14 @@ case $action in
   ;;
 
   *)
-    if [ -f "$1" ]; then
-      _dun_open_editor "$1"
+    if [ $# -eq 1 ]; then
+      if [ -f "$1" ]; then
+        _dun_open_editor "$1"
+      else
+        note_name="$(_dun_new_file_name "$1")"
+        _dun_open_editor "$note_name"
+      fi
     else
-      echo "Unknown argument: $1"
       _dun_usage
       exit 1
     fi
