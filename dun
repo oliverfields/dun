@@ -339,22 +339,6 @@ _dun_check_dependencies() {
 }
 
 
-_dun_new_file_name() {
-  new_file="$NOTES_DIR/$1"
-
-  # If file exists find a uniq integer suffix
-  if [ -e "$new_file" ]; then
-    num=1
-    while [ -e "${new_file}-$num" ]; do
-      num=$((num +1))
-    done
-    new_file="${new_file}-$num"
-  fi
-
-  echo "$new_file"
-}
-
-
 # For git run batch commands
 _git_sync() {
 
@@ -503,15 +487,11 @@ case $action in
 
       # Option to view, arvhive or go back
       while true; do
-        action="$(echo -e "View $candidate\nArchive $candidate\nDelete $candidate" | fzy $FZY_LINES)"
+        action="$(echo -e "View $candidate\nArchive $candidate" | fzy $FZY_LINES)"
         [ "$action" = "" ] && break
 
         case $action in
           View*) _dun_open_editor "$candidate" ;;
-          Delete*)
-            rm "$candidate"
-            break
-          ;;
           Archive*)
             # Hide file
             filename="${candidate_abs_path##*/}"
@@ -550,9 +530,18 @@ case $action in
       note_name='note'
     fi
 
-    note_name="$(_dun_new_file_name "$note_name")"
+    new_file="$NOTES_DIR/$note_name"
 
-    _dun_open_editor "$note_name"
+    # If file exists find a uniq integer suffix
+    if [ -e "$new_file" ]; then
+      num=1
+      while [ -e "${new_file}-$num" ]; do
+        num=$((num +1))
+      done
+      new_file="${new_file}-$num"
+    fi
+
+    _dun_open_editor "$new_file"
   ;;
 
   recent-notes)
@@ -577,13 +566,9 @@ case $action in
     filters=''
 
     if [ $# -lt 2 ]; then
-      # If no filters provided, then show all tasks with status that is of type todo and block
-      for s in ${STATUSES_TODO[@]}; do
-        awk_filter="$awk_filter || /$s/"
-        filters="$filters +${s}"
-      done
-      for s in ${STATUSES_BLOCK[@]}; do
-        awk_filter="$awk_filter || /$s/"
+      # If no filters provided, default to first todo status
+      for s in ${STATUSES_TODO[0]}; do
+        awk_filter="$awk_filter && /$s/"
         filters="$filters +${s}"
       done
     else
@@ -642,21 +627,15 @@ case $action in
   colorize)
     _dun_colorize
   ;;
-
   *)
     if [ $# -eq 1 ]; then
-      if [ -f "$1" ]; then
-        _dun_open_editor "$1"
-      else
-        note_name="$(_dun_new_file_name "$1")"
-        _dun_open_editor "$note_name"
-      fi
+      _dun_open_editor "$1"
     else
+      echo "Unknown arguments: $@"
       _dun_usage
       exit 1
     fi
   ;;
-
 esac
 
 case $action in
